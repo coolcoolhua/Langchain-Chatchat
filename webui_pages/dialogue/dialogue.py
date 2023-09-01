@@ -55,6 +55,7 @@ def dialogue_page(api: ApiRequest):
                                      ["LLM 对话",
                                       "知识库问答",
                                       "搜索引擎问答",
+                                      "安全问答"
                                       ],
                                      on_change=on_mode_change,
                                      key="dialogue_mode",
@@ -88,6 +89,18 @@ def dialogue_page(api: ApiRequest):
                     index=search_engine_list.index("duckduckgo") if "duckduckgo" in search_engine_list else 0,
                 )
                 se_top_k = st.number_input("匹配搜索结果条数：", 1, 20, 3)
+                
+        elif dialogue_mode == "安全问答":
+            with st.expander("知识库配置", True):
+                kb_list = api.list_knowledge_bases(no_remote_api=True)
+                selected_kb = st.selectbox(
+                    "请选择知识库：",
+                    kb_list,
+                    on_change=on_kb_change,
+                    key="selected_kb",
+                )
+                kb_top_k = st.number_input("匹配知识条数：", 1, 20, 3)
+                score_threshold = st.number_input("知识匹配分数阈值：", 0.0, 1.0, float(SCORE_THRESHOLD), 0.01)
 
     # Display chat messages from history on app rerun
 
@@ -137,6 +150,23 @@ def dialogue_page(api: ApiRequest):
                     chat_box.update_msg(text, 0)
                     chat_box.update_msg("\n\n".join(d["docs"]), 1, streaming=False)
             chat_box.update_msg(text, 0, streaming=False)
+        elif dialogue_mode == '安全问答':
+            history = get_messages_history(history_len)
+            chat_box.ai_say([
+                f"正在查询知识库并过滤安全词 `{selected_kb}` ...",
+                Markdown("...", in_expander=True, title="知识库匹配结果"),
+            ])
+            text = ""
+            for d in api.kb_safe_chat(prompt, selected_kb, kb_top_k, score_threshold, history):
+                print(d)
+                if error_msg := check_error_msg(d): # check whether error occured
+                    st.error(error_msg)
+                st.toast(d)
+                text += d["answer"]
+                chat_box.update_msg(text, 0)
+                chat_box.update_msg("\n\n".join(d["docs"]), 1, streaming=False)
+            chat_box.update_msg(text, 0, streaming=False)
+            
 
     now = datetime.now()
     with st.sidebar:

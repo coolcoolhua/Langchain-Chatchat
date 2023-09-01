@@ -53,8 +53,9 @@ def knowledge_base_page(api: ApiRequest):
     except Exception as e:
         st.error("获取知识库信息错误，请检查是否已按照 `README.md` 中 `4 知识库初始化与迁移` 步骤完成初始化或迁移，或是否为数据库连接错误。")
         st.stop()
+    st.toast(kb_list)
     kb_names = list(kb_list.keys())
-
+    st.toast(kb_names)
     if "selected_kb_name" in st.session_state and st.session_state["selected_kb_name"] in kb_names:
         selected_kb_index = kb_names.index(st.session_state["selected_kb_name"])
     else:

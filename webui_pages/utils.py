@@ -285,7 +285,7 @@ class ApiRequest:
         self,
         query: str,
         history: List[Dict] = [],
-        stream: bool = True,
+        stream: bool = False,
         no_remote_api: bool = None,
     ):
         '''
@@ -345,6 +345,45 @@ class ApiRequest:
                 stream=True,
             )
             return self._httpx_stream2generator(response, as_json=True)
+        
+    def kb_safe_chat(
+        self,
+        query: str,
+        knowledge_base_name: str,
+        top_k: int = VECTOR_SEARCH_TOP_K,
+        score_threshold: float = SCORE_THRESHOLD,
+        history: List[Dict] = [],
+        stream: bool = False,
+        no_remote_api: bool = None,
+    ):
+        '''
+        对应api.py/chat/knowledge_base_chat接口
+        '''
+        if no_remote_api is None:
+            no_remote_api = self.no_remote_api
+        print('hehe')
+        data = {
+            "query": query,
+            "knowledge_base_name": knowledge_base_name,
+            "top_k": top_k,
+            "score_threshold": score_threshold,
+            "history": history,
+            "stream": stream,
+            "local_doc_url": no_remote_api,
+        }
+
+        if no_remote_api:
+            from server.chat.kb_safe_chat import kb_safe_chat
+            response = kb_safe_chat(**data)
+            return self._fastapi_stream2generator(response, as_json=True)
+        else:
+            response = self.post(
+                "/chat/kb_safe_chat",
+                json=data,
+                stream=True,
+            )
+            return self._httpx_stream2generator(response, as_json=True)
+        
 
     def search_engine_chat(
         self,
@@ -656,6 +695,12 @@ def check_success_msg(data: Union[str, dict, list], key: str = "msg") -> str:
         and data["code"] == 200):
         return data[key]
     return ""
+
+def llm_test():
+    '''
+    '''
+    print("ahah")
+    # st.toast("haha")
 
 
 if __name__ == "__main__":
