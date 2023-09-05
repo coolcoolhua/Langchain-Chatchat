@@ -17,6 +17,7 @@ async def create_kb(knowledge_base_name: str = Body(..., examples=["samples"]),
                     embed_model: str = Body(EMBEDDING_MODEL),
                     ) -> BaseResponse:
     # Create selected knowledge base
+    print(knowledge_base_name)
     if not validate_kb_name(knowledge_base_name):
         return BaseResponse(code=403, msg="Don't attack me")
     if knowledge_base_name is None or knowledge_base_name.strip() == "":
@@ -37,13 +38,14 @@ async def create_kb(knowledge_base_name: str = Body(..., examples=["samples"]),
 
 
 async def delete_kb(
-        knowledge_base_name: str = Body(..., examples=["samples"])
+        knowledge_base_name: str = Body(..., examples=["samples"]),
+        test_key: str = Body("faiss")
     ) -> BaseResponse:
     # Delete selected knowledge base
     if not validate_kb_name(knowledge_base_name):
         return BaseResponse(code=403, msg="Don't attack me")
-    knowledge_base_name = urllib.parse.unquote(knowledge_base_name)
-
+    
+    print(knowledge_base_name,test_key)
     kb = KBServiceFactory.get_service_by_name(knowledge_base_name)
 
     if kb is None:

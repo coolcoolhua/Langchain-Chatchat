@@ -12,7 +12,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 from server.chat import (chat, knowledge_base_chat, openai_chat,
-                         search_engine_chat, kb_safe_chat)
+                         search_engine_chat, kb_safe_chat, kb_safe_chat_v2)
 from server.knowledge_base.kb_api import list_kbs, create_kb, delete_kb
 from server.knowledge_base.kb_doc_api import (list_docs, upload_doc, delete_doc,
                                               update_doc, download_doc, recreate_vector_store,
@@ -69,7 +69,10 @@ def create_app():
     
     app.post("/chat/kb_safe_chat",
              tags=["Chat"],
-             summary="测试")(kb_safe_chat)
+             summary="知识库问答+敏感词过滤")(kb_safe_chat)
+    app.post("/chat/kb_safe_chat_v2",
+             tags=["Chat"],
+             summary="知识库问答+敏感词过滤")(kb_safe_chat_v2)
 
     # Tag: Knowledge Base Management
     app.get("/knowledge_base/list_knowledge_bases",
