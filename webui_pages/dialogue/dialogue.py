@@ -56,10 +56,12 @@ def dialogue_page(api: ApiRequest):
             # sac.alert(text, description="descp", type="success", closable=True, banner=True)
 
         dialogue_mode = st.selectbox("请选择对话模式",
-                                     ["LLM 对话",
+                                     [
+                                      "融合问答",
+                                      "安全问答",
+                                      "LLM 对话",
                                       "知识库问答",
                                       "搜索引擎问答",
-                                      "安全问答"
                                       ],
                                      on_change=on_mode_change,
                                      key="dialogue_mode",
@@ -135,6 +137,18 @@ def dialogue_page(api: ApiRequest):
                 )
                 kb_top_k = st.number_input("匹配知识条数：", 1, 20, 3)
                 score_threshold = st.number_input("知识匹配分数阈值：", 0.0, 1.0, float(SCORE_THRESHOLD), 0.01)
+                
+        elif dialogue_mode == "融合问答":
+            with st.expander("知识库配置", True):
+                kb_list = api.list_knowledge_bases(no_remote_api=True)
+                selected_kb = st.selectbox(
+                    "请选择知识库：",
+                    kb_list,
+                    on_change=on_kb_change,
+                    key="selected_kb",
+                )
+                kb_top_k = st.number_input("匹配知识条数：", 1, 20, 3)
+                score_threshold = st.number_input("知识匹配分数阈值：", 0.0, 1.0, float(SCORE_THRESHOLD), 0.01)
 
     # Display chat messages from history on app rerun
 
@@ -186,19 +200,37 @@ def dialogue_page(api: ApiRequest):
             chat_box.update_msg(text, 0, streaming=False)
         elif dialogue_mode == '安全问答':
             history = get_messages_history(history_len)
+            # history = []
             chat_box.ai_say([
                 f"正在查询知识库并过滤安全词 `{selected_kb}` ...",
                 Markdown("...", in_expander=True, title="知识库匹配结果"),
             ])
             text = ""
+            docs = ""
             for d in api.kb_safe_chat(prompt, selected_kb, kb_top_k, score_threshold, history):
-                print(d)
                 if error_msg := check_error_msg(d): # check whether error occured
                     st.error(error_msg)
-                st.toast(d)
+                docs += d["docs"]
                 text += d["answer"]
-                chat_box.update_msg(text, 0)
-                chat_box.update_msg("\n\n".join(d["docs"]), 1, streaming=False)
+                # chat_box.update_msg(text, 0)
+            chat_box.update_msg(docs, 1, streaming=False)
+            chat_box.update_msg(text, 0, streaming=False)
+        elif dialogue_mode == '融合问答':
+            history = get_messages_history(history_len)
+            # history = []
+            chat_box.ai_say([
+                f"正在查询知识库并过滤安全词 `{selected_kb}` ...",
+                Markdown("...", in_expander=True, title="知识库匹配结果"),
+            ])
+            text = ""
+            docs = ""
+            for d in api.merged_chat(prompt, selected_kb, kb_top_k, score_threshold, history):
+                if error_msg := check_error_msg(d): # check whether error occured
+                    st.error(error_msg)
+                docs = d["docs"]
+                text += d["answer"]
+                # chat_box.update_msg(text, 0)
+            chat_box.update_msg("".join(docs), 1, streaming=False)
             chat_box.update_msg(text, 0, streaming=False)
             
 

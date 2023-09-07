@@ -23,10 +23,6 @@ from webui_pages.utils import *
 
 bad_words = [t.strip() for t in open('./server/chat/badwords.txt').readlines()]
 
-api = ApiRequest(base_url="http://127.0.0.1:7861", no_remote_api=False)
-
-
-bad_words = [t.strip() for t in open('./server/chat/badwords.txt').readlines()]
 
 def blocked_words_check(query):
     # 是否该被屏蔽
@@ -40,6 +36,13 @@ def blocked_words_check(query):
             break
     return should_be_blocked, searched_bad_word
 
+
+def history_reformat(h) -> {}:
+    res = {
+        "role":h.role, 
+        "content":h.content
+    }
+    return res
 
 
 def kb_safe_chat_v2(query: str = Body(..., description="用户输入", examples=["你好"]),
@@ -65,9 +68,21 @@ def kb_safe_chat_v2(query: str = Body(..., description="用户输入", examples=
     }
     
     
+    api = ApiRequest(base_url="http://127.0.0.1:7861", no_remote_api=False)
+    
     # 允许回答次数上限
     allowed_answer_times = 2
     
+    temp_history = []
+    if len(history)>0:
+        if type(history[0]) == History:
+            temp_history = [history_reformat(t) for t in history]
+        else :
+            temp_history = history
+    else:
+        temp_history = history
+            
+    print("now,history=",temp_history)
     
     # 前处理，如果query里包含就直接结束
     check_res, blocked_word = blocked_words_check(query)
@@ -82,12 +97,11 @@ def kb_safe_chat_v2(query: str = Body(..., description="用户输入", examples=
         print("当前第",answered_time,'次回答')
         text = ""
         docs = ""
-        for d in api.knowledge_base_chat(query, "samples", 5, 0.5, history):
+        for d in api.knowledge_base_chat(query, knowledge_base_name, 5, 0.5, temp_history):
             text += d["answer"]
             docs = "\n\n".join(d["docs"])
         # for d in api.chat_chat(query,history):
         #     text +=d
-        print(text)
         
         #后处理，如果回答中包含就重新生成
         check_res, blocked_word = blocked_words_check(text)
@@ -97,7 +111,6 @@ def kb_safe_chat_v2(query: str = Body(..., description="用户输入", examples=
                 "answer" : text,
                 "docs" : docs
             }
-            print(ret)
             break
         else:
             if answered_time < allowed_answer_times:
