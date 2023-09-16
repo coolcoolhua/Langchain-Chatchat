@@ -13,7 +13,7 @@ class OpenAiMessage(BaseModel):
 class OpenAiChatMsgIn(BaseModel):
     model: str = LLM_MODEL
     messages: List[OpenAiMessage]
-    temperature: float = 0.7
+    temperature: float = 0.01
     n: int = 1
     max_tokens: int = 1024
     stop: List[str] = []

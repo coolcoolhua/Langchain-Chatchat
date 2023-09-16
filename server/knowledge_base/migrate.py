@@ -12,6 +12,7 @@ from typing import Literal, Any, List
 
 
 pool = ThreadPoolExecutor(os.cpu_count())
+print("cpu数量",os.cpu_count())
 
 
 def create_tables():

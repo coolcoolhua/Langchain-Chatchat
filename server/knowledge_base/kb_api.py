@@ -45,7 +45,6 @@ async def delete_kb(
     if not validate_kb_name(knowledge_base_name):
         return BaseResponse(code=403, msg="Don't attack me")
     
-    print(knowledge_base_name,test_key)
     kb = KBServiceFactory.get_service_by_name(knowledge_base_name)
 
     if kb is None:

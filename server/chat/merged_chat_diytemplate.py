@@ -28,6 +28,38 @@ from langchain.docstore.document import Document
 bad_words = [t.strip() for t in open('./server/chat/badwords.txt').readlines()]
 
 
+role_definition = """
+角色：
+生涯辅导老师
+
+背景：
+中国的高中生们普遍缺乏对于职业生涯发展的探索。你作为知名的生涯辅导老师，有义务和能力改变他们的认知，让他们以轻松，非常深入浅出的方式获取各种职业学科的相关知识。
+
+目标：
+以专业且善解人意的态度，让高中生对了解一个职业或学科
+
+技能：
+1、对各种职业和专业都了如指掌。
+2、善于分析学生的问题是需要提供事实的“事实型问题”，还是需要提供观点的“观点型问题”。
+事实型问题（比如：“心理学的名人有谁”，“什么是心理学”）
+观点型问题（比如：“我是否适合学习心理学”）
+3、擅长从提供的已知信息提取答案。
+
+限制：
+回答尽量详细，不要出现“指令”，“已知信息”等内容。
+
+回答流程：
+1、问题类型判断：判断问题是事实型问题还是观点型问题
+2、输出答案：
+对于事实型问题，优先从已知信息提取答案。如果无法从中得到答案，忽略已知内容直接回答问题。
+对于观点型问题，以客观中立的态度，在回答中以“正面”和”反面“两个方面进行回答。
+3、总结
+对回答的答案附上总结。
+
+"""
+
+
+
 def blocked_words_check(query):
     """遍历敏感词表
 
@@ -136,8 +168,9 @@ def docs_merge_strategy(kb_docs, search_engine_docs, knowledge_base_name, reques
         
     
 
-def merged_chat(query: str = Body(..., description="用户输入", examples=["你好"]),
+def merged_chat_diytemplate(query: str = Body(..., description="用户输入", examples=["你好"]),
                         knowledge_base_name: str = Body(..., description="知识库名称", examples=["samples"]),
+                        used_template: str = Body(..., description="使用的template", examples=["你是一个生涯辅导老师"]),
                         top_k: int = Body(MERGED_MAX_DOCS_NUM, description="最大匹配向量数"),
                         score_threshold: float = Body(SCORE_THRESHOLD, description="知识库匹配相关度阈值，取值范围在0-1之间，SCORE越小，相关度越高，取到1相当于不筛选，建议设置在0.5左右", ge=0, le=1),
                         history: List[History] = Body([],
@@ -150,7 +183,7 @@ def merged_chat(query: str = Body(..., description="用户输入", examples=["�
                                                       ),
                         stream: bool = Body(False, description="流式输出"),
                         local_doc_url: bool = Body(False, description="知识文件返回本地路径(true)或URL(false)"),
-                        request: Request = None,
+                        request: Request = None
                         ):
     
     ret = {
@@ -176,8 +209,10 @@ def merged_chat(query: str = Body(..., description="用户输入", examples=["�
     kb_docs = kb_search_strategy(query, knowledge_base_name, top_k, score_threshold)
     print("知识库共n篇",len(kb_docs))
     
-    if len(kb_docs)<MERGED_MAX_DOCS_NUM:
-        searchengine_docs = lookup_search_engine(query, "bing", top_k)
+    
+    # 开启/关闭搜索文章
+    # if len(kb_docs)<MERGED_MAX_DOCS_NUM:
+    #     searchengine_docs = lookup_search_engine(query, "bing", top_k)
     
     final_docs, source_document = docs_merge_strategy(kb_docs, searchengine_docs,knowledge_base_name,request)
     
@@ -205,13 +240,26 @@ def merged_chat(query: str = Body(..., description="用户输入", examples=["�
     else:
         temp_history = history
             
+            
     print("now,history=",temp_history)
+    
+    
+    # 增加角色定义
+    # prefix_history = [{
+    #     "role": "system",
+    #     "content": role_definition
+    # }]
+    
+    # if prefix_history[0] not in temp_history:
+    #     temp_history = prefix_history + temp_history
+        
+    
     
     
     for answered_time in range(1,allowed_answer_times+1):
         print("当前第",answered_time,'次回答')
         text = ""
-        for d in api.docs_chat(query, knowledge_base_name, 5, score_threshold, temp_history,final_docs,context):
+        for d in api.docs_chat_diytemplate(query, knowledge_base_name, used_template, 5, score_threshold, temp_history,final_docs,context):
             text += d["answer"]
         # for d in api.chat_chat(query,history):
         #     text +=d

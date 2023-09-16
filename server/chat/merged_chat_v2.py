@@ -28,6 +28,58 @@ from langchain.docstore.document import Document
 bad_words = [t.strip() for t in open('./server/chat/badwords.txt').readlines()]
 
 
+role_definition = """
+角色：
+高中生涯辅导老师，为高中生做生涯探索辅导。你主要回答心理学方面的问题。
+背景：
+中国的高中生们普遍缺乏对于职业生涯发展的探索。你作为知名的生涯辅导老师，有义务和能力改变他们的认知，让他们以轻松，非常深入浅出的方式获取各种职业学科的相关知识。
+目标：
+1、以专业且善解人意的态度，让高中生对了解一个职业或学科。
+2、每个学生的信息都不相同，如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答。
+限制：
+用亲切的语气回答，回答尽量详细。
+不要出现“指令”，“已知信息”等内容。
+不要描述自己的语言风格等内容。
+
+"""
+
+judge_template = """判断以下问题是「闲聊问题」还是和生涯教育相关的「观点问题」还是「事实问题」。
+示例问题：“你好”，示例答案：“「闲聊问题」”。
+示例问题：“你是谁”，示例答案：“「闲聊问题」”。
+示例问题：“我适合学心理学吗”，示例答案：“「观点问题」”。
+示例问题：“什么是心理学”，示例答案：“「事实问题」”。
+注意：和心理学相关的问题都不是闲聊问题！
+问题：“{}”, 答案:
+"""
+
+truth_template = """<角色>你是一个高中生涯教育老师，你主要回答心理学方面的问题。</角色>
+<指令>优先从已知信息提取答案。
+如果无法从中得到答案，忽略已知内容，根据回答历史和上下文，直接回答问题。
+回答尽量详细，不要出现“角色”，“指令”，“已知信息”内的内容。</指令>
+<历史信息>{{ history }}</历史信息>
+<已知信息>{{ context }}</已知信息>
+<问题>{{ question }}</问题>                 
+"""
+
+opinion_template = """<角色>你是一个高中生涯教育老师，你主要回答心理学方面的问题。</角色>
+<指令>优先从已知信息提取答案。
+以客观中立的态度，在回答中以“正面”和”反面“两个方面进行回答，最后附上总结。
+如果无法从中得到答案，忽略已知内容，根据回答历史和上下文，直接回答问题。
+回答尽量详细，不要出现“角色”，“指令”，“已知信息”内的内容。</指令>
+<历史信息>{{ history }}</历史信息>
+<已知信息>{{ context }}</已知信息>
+<问题>{{ question }}</问题>
+"""
+
+chat_template = """<角色>你是一个高中生涯教育老师，你主要回答心理学方面的问题。</角色>
+<限制>只能说自己是个高中生涯教育老师。
+不要描述自己。
+</限制>
+<问题>{}</问题>
+"""
+
+
+
 def blocked_words_check(query):
     """遍历敏感词表
 
@@ -133,10 +185,18 @@ def docs_merge_strategy(kb_docs, search_engine_docs, knowledge_base_name, reques
             ])
     return final_docs, source_documents
     
+    
+def question_type_judge(text,docs_len):
+    if '闲聊' in text or docs_len == 0:
+        return '闲聊'
+    elif '事实' in text:
+        return '事实'
+    else:
+        return '观点'
         
     
 
-def merged_chat(query: str = Body(..., description="用户输入", examples=["你好"]),
+def merged_chat_v2(query: str = Body(..., description="用户输入", examples=["你好"]),
                         knowledge_base_name: str = Body(..., description="知识库名称", examples=["samples"]),
                         top_k: int = Body(MERGED_MAX_DOCS_NUM, description="最大匹配向量数"),
                         score_threshold: float = Body(SCORE_THRESHOLD, description="知识库匹配相关度阈值，取值范围在0-1之间，SCORE越小，相关度越高，取到1相当于不筛选，建议设置在0.5左右", ge=0, le=1),
@@ -150,79 +210,123 @@ def merged_chat(query: str = Body(..., description="用户输入", examples=["�
                                                       ),
                         stream: bool = Body(False, description="流式输出"),
                         local_doc_url: bool = Body(False, description="知识文件返回本地路径(true)或URL(false)"),
-                        request: Request = None,
+                        request: Request = None
                         ):
     
+    # 允许回答次数上限
+    allowed_answer_times = 2
+    # 知识库文档合集
+    kb_docs = []
+    # 搜索引擎文档合集
+    searchengine_docs = []
+    # 最终文档合集
+    final_docs = []
+    # 展示用文档markdown
+    source_document = ""
+    
+    # 返回模版
     ret = {
         "answer": "暂时无法回答该问题",
-        "docs": ""
+        "docs": "",
+        "question_type": ""
     }
     
     # 前处理，如果query里包含就直接结束
     check_res, blocked_word = blocked_words_check(query)
-    if check_res == True:
-        ret = {
-            "answer": "该问题无法回答，因为问题中包含屏蔽词: "+ blocked_word,
-            "docs" : "".join([])
-        }
+    if check_res:
+        ret["answer"]="该问题无法回答，因为问题中包含屏蔽词: "+ blocked_word
         return JSONResponse(ret)
     
-    kb_docs = []
-    searchengine_docs = []
-    final_docs = []
-    source_document = ""
-    
-    # kb搜索docs
-    kb_docs = kb_search_strategy(query, knowledge_base_name, top_k, score_threshold)
-    print("知识库共n篇",len(kb_docs))
-    
-    if len(kb_docs)<MERGED_MAX_DOCS_NUM:
-        searchengine_docs = lookup_search_engine(query, "bing", top_k)
-    
-    final_docs, source_document = docs_merge_strategy(kb_docs, searchengine_docs,knowledge_base_name,request)
-    
-    # print("最终docs",final_docs)
-    # print("最终source", source_document)
-    
-    final_docs.reverse()
-    
-    context = "\n".join([doc.page_content for doc in final_docs]).replace('@@@@@@@@@@\n','')
-    
-    # print("最终context",context)
-    # 搜索引擎搜索docs
 
     api = ApiRequest(base_url="http://127.0.0.1:7861", no_remote_api=False)
+
     
-    # 允许回答次数上限
-    allowed_answer_times = 2
-    
-    temp_history = []
+    final_history = []
     if len(history)>0:
         if type(history[0]) == History:
-            temp_history = [history_reformat(t) for t in history]
+            final_history = [history_reformat(t) for t in history]
         else :
-            temp_history = history
+            final_history = history
     else:
-        temp_history = history
+        final_history = history
             
-    print("now,history=",temp_history)
     
+    # 增加角色定义
+    prefix_history = [{
+        "role": "system",
+        "content": role_definition
+    }]
     
+    if prefix_history[0] not in final_history:
+        final_history = prefix_history + final_history
+    
+    # step1 判断是哪种类型的问题
+    judge_prompt = judge_template.format(query)
+    r = api.chat_judge(judge_prompt, history=final_history)
+    judge_text = ""
+    for t in r:
+        judge_text += t
+
+    docs_len = len(search_docs(query, knowledge_base_name, top_k, score_threshold))
+    question_type = question_type_judge(judge_text,docs_len)
+    
+    print("类别判断为",question_type)
+    
+    if question_type !='闲聊':
+        # kb搜索docs
+        # 如果query里不包含专业名，自动加上
+        kb_query = query if knowledge_base_name in query else knowledge_base_name + "的" + query
+        print("知识库搜索query",kb_query)
+        kb_docs = kb_search_strategy(kb_query, knowledge_base_name, top_k, score_threshold)
+        print("知识库共n篇",len(kb_docs))
+        
+        # 搜索引擎搜索docs
+        # 开启/关闭搜索文章
+        if len(kb_docs)<MERGED_MAX_DOCS_NUM:
+            searchengine_docs = lookup_search_engine(kb_query, "bing", top_k)
+        
+        print("搜索库共n篇",len(searchengine_docs))
+        
+        final_docs, source_document = docs_merge_strategy(kb_docs, searchengine_docs,knowledge_base_name,request)
+        
+        # print("最终docs",final_docs)
+        # print("最终source", source_document)
+        
+        # 逆反搜索结果，越重要的越靠近问题
+        final_docs.reverse()
+        
+        # 模型最终看到的上下文
+        context = "\n".join([doc.page_content for doc in final_docs]).replace('@@@@@@@@@@\n','')
+        # print("最终context",context)
+    
+
     for answered_time in range(1,allowed_answer_times+1):
         print("当前第",answered_time,'次回答')
+        
         text = ""
-        for d in api.docs_chat(query, knowledge_base_name, 5, score_threshold, temp_history,final_docs,context):
-            text += d["answer"]
-        # for d in api.chat_chat(query,history):
-        #     text +=d
+        if question_type ==  "闲聊":
+            chat_prompt = chat_template.format(query)
+            for d in api.chat_judge(chat_prompt, history=final_history):
+                text += d
+            source_document = ""
+        else:
+            if question_type == '事实':
+                used_template = truth_template
+            else:
+                used_template = opinion_template
+                
+                
+            for d in api.docs_chat_diytemplate(query, knowledge_base_name, used_template, 5, score_threshold, final_history,final_docs,context):
+                text += d["answer"]
+        
         
         #后处理，如果回答中包含就重新生成
         check_res, blocked_word = blocked_words_check(text)
-        
         if check_res == False:
             ret = {
                 "answer" : text,
-                "docs" : source_document
+                "docs" : source_document,
+                "question_type": question_type
             }
             break
         else:
@@ -233,7 +337,8 @@ def merged_chat(query: str = Body(..., description="用户输入", examples=["�
                 print("暂时无法回答该问题，因为该问题的回答中包含关键词: " + blocked_word + '。被过滤前的答案为:\n\n' + text)
                 ret = {
                     "answer" : "暂时无法回答该问题，因为该问题的回答中包含关键词: " + blocked_word + '。被过滤前的答案为:\n\n' + text,
-                    "docs" : "".join([])
+                    "docs" : "",
+                    "question_type": question_type
                 }
                            
     return JSONResponse(ret)

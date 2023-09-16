@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from configs.model_config import LLM_MODEL, NLTK_DATA_PATH
-from configs.server_config import OPEN_CROSS_DOMAIN, HTTPX_DEFAULT_TIMEOUT
+from configs.server_config_test import OPEN_CROSS_DOMAIN, HTTPX_DEFAULT_TIMEOUT
 from configs import VERSION
 import argparse
 import uvicorn
@@ -16,8 +16,7 @@ from server.chat import (chat, knowledge_base_chat, openai_chat,
                          search_engine_chat, kb_safe_chat, kb_safe_chat_v2,
                          merged_chat, docs_chat,
                          merged_chat_diytemplate,docs_chat_diytemplate,
-                         chat_judge,merged_chat_v2,
-                         search_engine_docs
+                         chat_judge
                          )
 from server.knowledge_base.kb_api import list_kbs, create_kb, delete_kb
 from server.knowledge_base.kb_doc_api import (list_files, upload_doc, delete_doc,
@@ -76,10 +75,6 @@ def create_app():
              tags=["Chat"],
              summary="与搜索引擎对话")(search_engine_chat)
     
-    app.post("/chat/search_engine_docs",
-             tags=["Chat"],
-             summary="返回搜索引擎文档和上下文")(search_engine_docs)
-    
     
     app.post("/chat/kb_safe_chat",
              tags=["Chat"],
@@ -90,9 +85,6 @@ def create_app():
     app.post("/chat/merged_chat",
             tags=["Chat"],
             summary="知识库问答+敏感词过滤")(merged_chat)
-    app.post("/chat/merged_chat_v2",
-            tags=["Chat"],
-            summary="知识库问答+敏感词过滤")(merged_chat_v2)
     app.post("/chat/merged_chat_diytemplate",
             tags=["Chat"],
             summary="知识库问答+敏感词过滤+自定义prompt")(merged_chat_diytemplate)
@@ -244,7 +236,7 @@ def run_api(host, port, **kwargs):
                     ssl_certfile=kwargs.get("ssl_certfile"),
                     )
     else:
-        uvicorn.run('api:app', host=host, port=port, workers=2 )
+        uvicorn.run(app, host=host, port=port)
 
 
 if __name__ == "__main__":
@@ -252,7 +244,7 @@ if __name__ == "__main__":
                                      description='About langchain-ChatGLM, local knowledge based ChatGLM with langchain'
                                                  ' ｜ 基于本地知识库的 ChatGLM 问答')
     parser.add_argument("--host", type=str, default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=7861)
+    parser.add_argument("--port", type=int, default=7862)
     parser.add_argument("--ssl_keyfile", type=str)
     parser.add_argument("--ssl_certfile", type=str)
     # 初始化消息

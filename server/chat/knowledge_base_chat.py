@@ -81,7 +81,7 @@ def knowledge_base_chat(query: str = Body(..., description="用户输入", examp
             else:
                 parameters = urlencode({"knowledge_base_name": knowledge_base_name, "file_name":filename})
                 url = f"{request.base_url}knowledge_base/download_doc?" + parameters
-            text = f"""出处 [{inum + 1}] [{filename}]({url}) \n\n{doc.page_content}\n\n"""
+            text = f"""出处 [{inum + 1}] [{filename}]({url}) \n\n{doc.page_content}\n\n""".replace('@@@@@@@@@@','') + '\n----\n'
             source_documents.append(text)
             
         # print("kb最终source",source_documents)

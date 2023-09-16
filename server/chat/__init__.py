@@ -5,4 +5,9 @@ from .search_engine_chat import search_engine_chat
 from .kb_safe_chat import kb_safe_chat
 from .kb_safe_chat_v2 import kb_safe_chat_v2
 from .merged_chat import merged_chat
+from .merged_chat_v2 import merged_chat_v2
+from .merged_chat_diytemplate import merged_chat_diytemplate
 from .docs_chat import docs_chat
+from .docs_chat_diytemplate import docs_chat_diytemplate
+from .chat_judge import chat_judge
+from .search_engine_docs import search_engine_docs

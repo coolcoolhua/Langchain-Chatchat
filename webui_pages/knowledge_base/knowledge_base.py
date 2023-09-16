@@ -267,7 +267,7 @@ def knowledge_base_page(api: ApiRequest):
                 "删除知识库",
                 use_container_width=True,
         ):
-            ret = api.delete_knowledge_base(kb)
+            ret = api.delete_knowledge_base(kb,'test')
             st.toast(ret.get("msg", " "))
             time.sleep(1)
             st.experimental_rerun()

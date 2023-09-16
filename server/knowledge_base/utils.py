@@ -19,6 +19,8 @@ import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Union, Callable, Dict, Optional, Tuple, Generator
 
+from langchain.text_splitter import CharacterTextSplitter
+
 
 # make HuggingFaceEmbeddings hashable
 def _embeddings_hash(self):
@@ -189,7 +191,7 @@ class KnowledgeFile:
         self.document_loader_name = get_LoaderClass(self.ext)
 
         # TODO: 增加依据文件格式匹配text_splitter
-        self.text_splitter_name = None
+        self.text_splitter_name = 'CharacterTextSplitter'
 
     def file2text(self, using_zh_title_enhance=ZH_TITLE_ENHANCE, refresh: bool = False):
         if self.docs is not None and not refresh:
@@ -230,7 +232,7 @@ class KnowledgeFile:
                     TextSplitter = getattr(text_splitter_module, "SpacyTextSplitter")
                     text_splitter = TextSplitter(
                         pipeline="zh_core_web_sm",
-                        chunk_size=CHUNK_SIZE,
+                        chunk_size=10,
                         chunk_overlap=OVERLAP_SIZE,
                     )
                     self.text_splitter_name = "SpacyTextSplitter"
@@ -238,15 +240,20 @@ class KnowledgeFile:
                     text_splitter_module = importlib.import_module('langchain.text_splitter')
                     TextSplitter = getattr(text_splitter_module, self.text_splitter_name)
                     text_splitter = TextSplitter(
-                        chunk_size=CHUNK_SIZE,
-                        chunk_overlap=OVERLAP_SIZE)
+                        separator = "\n\n@@@@@@@@@@\n\n",
+                        chunk_size = 10,
+                        chunk_overlap= 0,
+                        
+                    )
             except Exception as e:
                 print(e)
-                text_splitter_module = importlib.import_module('langchain.text_splitter')
-                TextSplitter = getattr(text_splitter_module, "RecursiveCharacterTextSplitter")
-                text_splitter = TextSplitter(
-                    chunk_size=CHUNK_SIZE,
-                    chunk_overlap=OVERLAP_SIZE,
+                # text_splitter_module = importlib.import_module('langchain.text_splitter')
+                # TextSplitter = getattr(text_splitter_module, "CharacterTextSplitter")
+                text_splitter = CharacterTextSplitter(
+                    separator = "\n\n@@@@@@@@@@\n\n",
+                    chunk_size = 300,
+                    chunk_overlap= 0,
+                    
                 )
 
             docs = loader.load_and_split(text_splitter)
