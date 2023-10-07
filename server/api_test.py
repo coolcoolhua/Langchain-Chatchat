@@ -13,8 +13,8 @@ from fastapi import Body
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 from server.chat import (chat, knowledge_base_chat, openai_chat,
-                         search_engine_chat, kb_safe_chat, kb_safe_chat_v2,
-                         merged_chat, docs_chat,
+                         search_engine_chat, kb_safe_chat,
+                         merged_chat,
                          merged_chat_diytemplate,docs_chat_diytemplate,
                          chat_judge
                          )
@@ -79,18 +79,12 @@ def create_app():
     app.post("/chat/kb_safe_chat",
              tags=["Chat"],
              summary="知识库问答+敏感词过滤")(kb_safe_chat)
-    app.post("/chat/kb_safe_chat_v2",
-             tags=["Chat"],
-             summary="知识库问答+敏感词过滤")(kb_safe_chat_v2)
     app.post("/chat/merged_chat",
             tags=["Chat"],
             summary="知识库问答+敏感词过滤")(merged_chat)
     app.post("/chat/merged_chat_diytemplate",
             tags=["Chat"],
             summary="知识库问答+敏感词过滤+自定义prompt")(merged_chat_diytemplate)
-    app.post("/chat/docs_chat",
-            tags=["Chat"],
-            summary="知识库问答+敏感词过滤")(docs_chat)
     app.post("/chat/docs_chat_diytemplate",
         tags=["Chat"],
         summary="知识库问答+敏感词过滤+自定义prompt")(docs_chat_diytemplate)

@@ -30,7 +30,7 @@ bad_words = [t.strip() for t in open('./server/chat/badwords.txt').readlines()]
 
 role_definition = """
 角色：
-高中生涯辅导老师，为高中生做生涯探索辅导。你主要回答心理学方面的问题。
+高中生涯辅导老师，为高中生做生涯探索辅导。可以为学生提供各个学科，专业方向的指导。
 背景：
 中国的高中生们普遍缺乏对于职业生涯发展的探索。你作为知名的生涯辅导老师，有义务和能力改变他们的认知，让他们以轻松，非常深入浅出的方式获取各种职业学科的相关知识。
 目标：
@@ -43,14 +43,33 @@ role_definition = """
 
 """
 
-judge_template = """判断以下问题是「闲聊问题」还是和生涯教育相关的「观点问题」还是「事实问题」。
-示例问题：“你好”，示例答案：“「闲聊问题」”。
-示例问题：“你是谁”，示例答案：“「闲聊问题」”。
-示例问题：“我适合学心理学吗”，示例答案：“「观点问题」”。
-示例问题：“什么是心理学”，示例答案：“「事实问题」”。
-注意：和心理学相关的问题都不是闲聊问题！
+# judge_template = """判断以下问题是「闲聊问题」还是和生涯教育相关的「观点问题」还是「事实问题」。
+# 示例问题：“你好”，示例答案：“「闲聊问题」”。
+# 示例问题：“你是谁”，示例答案：“「闲聊问题」”。
+# 示例问题：“我适合学心理学吗”，示例答案：“「观点问题」”。
+# 示例问题：“什么是心理学”，示例答案：“「事实问题」”。
+# 注意：和心理学相关的问题都不是闲聊问题！
+# 问题：“{}”, 答案:
+# """
+
+judge_template = """判断以下问题与职业生涯教育或{}是否相关，答案可选项「相关」，「不相关」。
+示例问题：“你好”，示例答案：“「不相关」”。
+示例问题：“你是谁”，示例答案：“「不相关」”。
+示例问题：“我适合学心理学吗”，示例答案：“「相关」”。
+示例问题：“什么是金融学”，示例答案：“「相关」”。
+根据示例答案直接给出答案，只允许出现答案可选项中的内容。
 问题：“{}”, 答案:
 """
+
+opinion_truth_judge_template ="""
+判断以下问题是事实性问题还是观点性问题。
+示例问题：“什么是计算机科学”，示例答案：“「事实性问题」”。
+示例问题：“计算机科学排名”，示例答案：“「事实性问题」”。
+示例问题：“我适合学金融学吗”，示例答案：“「观点性问题」”。
+示例问题：“计算机专业数学难吗”，示例答案：“「观点性问题」”。
+问题：“{}”, 答案:
+"""
+
 
 truth_template = """<角色>你是一个高中生涯教育老师，你主要回答心理学方面的问题。</角色>
 <指令>优先从已知信息提取答案。
@@ -61,20 +80,18 @@ truth_template = """<角色>你是一个高中生涯教育老师，你主要回�
 <问题>{{ question }}</问题>                 
 """
 
-opinion_template = """<角色>你是一个高中生涯教育老师，你主要回答心理学方面的问题。</角色>
+opinion_template = """<角色>你是一个高中生涯教育老师</角色>
 <指令>优先从已知信息提取答案。
-以客观中立的态度，在回答中以“正面”和”反面“两个方面进行回答，最后附上总结。
+回答尽量详细，要以客观中立的态度，在回答中以“正面”和”反面“两个方面进行回答，最后附上总结。
 如果无法从中得到答案，忽略已知内容，根据回答历史和上下文，直接回答问题。
-回答尽量详细，不要出现“角色”，“指令”，“已知信息”内的内容。</指令>
+，不要出现“角色”，“指令”，“已知信息”内的内容。如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答</指令>
 <历史信息>{{ history }}</历史信息>
 <已知信息>{{ context }}</已知信息>
 <问题>{{ question }}</问题>
 """
 
-chat_template = """<角色>你是一个高中生涯教育老师，你主要回答心理学方面的问题。</角色>
-<限制>只能说自己是个高中生涯教育老师。
-不要描述自己。
-</限制>
+chat_template = """<角色>你是一个高中生涯教育老师，可以为学生提供各个学科，专业方向的指导</角色>
+<限制>只能说自己是个高中生涯教育老师。不要描述自己。如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答</限制>
 <问题>{}</问题>
 """
 
@@ -148,7 +165,7 @@ def lookup_search_engine(
     return docs
 
 def kb_search_strategy(query,knowledge_base_name, top_k, score_shreshold):
-    for i in range(3):
+    for i in range(2):
         # print("当前使用分值",score_shreshold)
         docs = search_docs(query, knowledge_base_name, top_k, score_shreshold)
         # print("最终文档",docs)
@@ -186,17 +203,18 @@ def docs_merge_strategy(kb_docs, search_engine_docs, knowledge_base_name, reques
     return final_docs, source_documents
     
     
-def question_type_judge(text,docs_len):
-    if '闲聊' in text or docs_len == 0:
+def question_type_judge(text, docs_len):
+    print("搜索到的文档数量",docs_len)
+    print("模型对query的判断是",text)
+    # 原始query既搜不到 也被判定成闲聊，才算闲聊
+    if '不相关' in text and docs_len == 0:
         return '闲聊'
-    elif '事实' in text:
-        return '事实'
     else:
-        return '观点'
-        
+        return '相关'
+    
     
 
-def merged_chat_v2(query: str = Body(..., description="用户输入", examples=["你好"]),
+def merged_chat_prompt_test(query: str = Body(..., description="用户输入", examples=["你好"]),
                         knowledge_base_name: str = Body(..., description="知识库名称", examples=["samples"]),
                         top_k: int = Body(MERGED_MAX_DOCS_NUM, description="最大匹配向量数"),
                         score_threshold: float = Body(SCORE_THRESHOLD, description="知识库匹配相关度阈值，取值范围在0-1之间，SCORE越小，相关度越高，取到1相当于不筛选，建议设置在0.5左右", ge=0, le=1),
@@ -210,8 +228,20 @@ def merged_chat_v2(query: str = Body(..., description="用户输入", examples=[
                                                       ),
                         stream: bool = Body(False, description="流式输出"),
                         local_doc_url: bool = Body(False, description="知识文件返回本地路径(true)或URL(false)"),
-                        request: Request = None
+                        request: Request = None,
+                        change_templates : List = Body([],
+                                                      description="xuyao",
+                                                      examples=[['a','b','c','d']]
+                                                      ),
                         ):
+    
+    for t in change_templates:
+        print("所有模版",t)
+        
+    judge_template, opinion_truth_judge_template, truth_template, opinion_template, chat_template = change_templates
+    
+    # 计时
+    t0 = time.time()
     
     # 允许回答次数上限
     allowed_answer_times = 2
@@ -261,29 +291,44 @@ def merged_chat_v2(query: str = Body(..., description="用户输入", examples=[
         final_history = prefix_history + final_history
     
     # step1 判断是哪种类型的问题
-    judge_prompt = judge_template.format(query)
-    r = api.chat_judge(judge_prompt, history=final_history)
+    judge_prompt = judge_template.format(knowledge_base_name,query)
+    r = api.chat_chat(judge_prompt, history = [])
     judge_text = ""
     for t in r:
         judge_text += t
 
-    docs_len = len(search_docs(query, knowledge_base_name, top_k, score_threshold))
-    question_type = question_type_judge(judge_text,docs_len)
+    kb_docs = search_docs(query, knowledge_base_name, top_k, score_threshold)
+    docs_len = len(kb_docs)
+    question_type_origin = question_type_judge(judge_text,docs_len)
+    question_type = question_type_origin
     
-    print("类别判断为",question_type)
+    print("生涯相关性判断为,",question_type)
+    print('第一阶段响应耗时为：', round(time.time() - t0, 2), 's')
     
-    if question_type !='闲聊':
+    if question_type !='闲聊' :
+        
+        # 判断是事实性还是观点性
+        judge_prompt = opinion_truth_judge_template.format(query)
+        for d in api.chat_chat(judge_prompt, history=final_history):
+            judge_text += d
+        if '事实' in judge_text:
+            question_type = '事实'
+        else:
+            question_type = '观点'
+        
         # kb搜索docs
         # 如果query里不包含专业名，自动加上
-        kb_query = query if knowledge_base_name in query else knowledge_base_name + "的" + query
-        print("知识库搜索query",kb_query)
-        kb_docs = kb_search_strategy(kb_query, knowledge_base_name, top_k, score_threshold)
-        print("知识库共n篇",len(kb_docs))
+        
+        
+        # kb_query = query
+        # print("\n知识库搜索query",kb_query)
+        # kb_docs = kb_search_strategy(kb_query, knowledge_base_name, top_k, score_threshold)
+        print("知识库共n篇",docs_len)
         
         # 搜索引擎搜索docs
-        # 开启/关闭搜索文章
+        search_query = query if knowledge_base_name in query else knowledge_base_name + "的" + query
         if len(kb_docs)<MERGED_MAX_DOCS_NUM:
-            searchengine_docs = lookup_search_engine(kb_query, "bing", top_k)
+            searchengine_docs = lookup_search_engine(search_query, "bing", top_k)
         
         print("搜索库共n篇",len(searchengine_docs))
         
@@ -298,8 +343,11 @@ def merged_chat_v2(query: str = Body(..., description="用户输入", examples=[
         # 模型最终看到的上下文
         context = "\n".join([doc.page_content for doc in final_docs]).replace('@@@@@@@@@@\n','')
         # print("最终context",context)
-    
 
+
+    print("最终判断问题类型为",question_type)
+    print('第二阶段响应耗时为：', round(time.time() - t0, 2), 's')
+    
     for answered_time in range(1,allowed_answer_times+1):
         print("当前第",answered_time,'次回答')
         
@@ -316,9 +364,12 @@ def merged_chat_v2(query: str = Body(..., description="用户输入", examples=[
                 used_template = opinion_template
                 
                 
-            for d in api.docs_chat_diytemplate(query, knowledge_base_name, used_template, 5, score_threshold, final_history,final_docs,context):
+            for d in api.context_chat(query, knowledge_base_name, used_template, 5, score_threshold, final_history,final_docs,context):
                 text += d["answer"]
         
+        
+        # 给dialog展示
+        text = "生涯相关性判断为\n\n" + question_type_origin + '\n\n' + "最终判断问题类型为\n\n" + question_type+ '\n\n' + "最终回答\n\n" + text
         
         #后处理，如果回答中包含就重新生成
         check_res, blocked_word = blocked_words_check(text)

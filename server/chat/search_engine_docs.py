@@ -85,11 +85,15 @@ def search_engine_docs(query: str = Body(..., description="用户输入", exampl
             f"""出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n"""
             for inum, doc in enumerate(docs)
         ]
+    urls = [ doc.metadata["source"]
+        for inum, doc in enumerate(docs)
+    ]
     
     res = json.dumps({
                               "docs": source_documents,
                               "context": context,
-                              "docs_origin": str(docs)
+                              "docs_origin": str(docs),
+                              "urls" : urls
                               },
                              ensure_ascii=False)
     

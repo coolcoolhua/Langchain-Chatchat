@@ -10,7 +10,7 @@ from configs.model_config import (
     LLM_MODEL,
     MERGED_MAX_DOCS_NUM,
     PROMPT_TEMPLATE,
-    TEMPERATURE
+    TEMPERATURE,
 )
 from server.utils import get_model_worker_config
 from typing import List, Dict
@@ -20,34 +20,49 @@ chat_box = ChatBox(
     assistant_avatar=os.path.join("img", "chatchat_icon_blue_square_v2.png")
 )
 
-judge_template1 = """你是一个生涯教育老师。判断以下问题是「闲聊问题」还是和生涯教育相关的「观点问题」还是「事实问题」。
-示例问题：“你好”，示例答案：“「闲聊问题」”。
-示例问题：“我适合学心理学吗”，示例答案：“「观点问题」”。
-示例问题：“什么是心理学”，示例答案：“「事实问题」”。
+judge_template = """判断以下问题与职业生涯教育或{}是否相关，答案可选项「相关」，「不相关」。
+示例问题：“你好”，示例答案：“「不相关」”。
+示例问题：“你是谁”，示例答案：“「不相关」”。
+示例问题：“我适合学心理学吗”，示例答案：“「相关」”。
+示例问题：“什么是金融学”，示例答案：“「相关」”。
+根据示例答案直接给出答案，只允许出现答案可选项中的内容。
 问题：“{}”, 答案:
 """
 
-truth_template = """<角色>你是一个生涯教育老师</角色>
+opinion_truth_judge_template = """
+判断以下问题是事实性问题还是观点性问题。
+示例问题：“什么是计算机科学”，示例答案：“「事实性问题」”。
+示例问题：“计算机科学排名”，示例答案：“「事实性问题」”。
+示例问题：“我适合学金融学吗”，示例答案：“「观点性问题」”。
+示例问题：“计算机专业数学难吗”，示例答案：“「观点性问题」”。
+问题：“{}”, 答案:
+"""
+
+
+truth_template = """<角色>你是一个高中生涯教育老师，你主要回答心理学方面的问题。</角色>
 <指令>优先从已知信息提取答案。
-如果无法从中得到答案，忽略已知内容直接回答问题。
+如果无法从中得到答案，忽略已知内容，根据回答历史和上下文，直接回答问题。
 回答尽量详细，不要出现“角色”，“指令”，“已知信息”内的内容。</指令>
+<历史信息>{{ history }}</历史信息>
 <已知信息>{{ context }}</已知信息>
 <问题>{{ question }}</问题>                 
 """
 
-opinion_template = """<角色>你是一个生涯教育老师</角色>
+opinion_template = """<角色>你是一个高中生涯教育老师</角色>
 <指令>优先从已知信息提取答案。
-以客观中立的态度，在回答中以“正面”和”反面“两个方面进行回答，最后附上总结。
-如果无法从中得到答案，忽略已知内容直接回答问题。
-回答尽量详细，不要出现“角色”，“指令”，“已知信息”内的内容。</指令>
+回答尽量详细，要以客观中立的态度，在回答中以“正面”和”反面“两个方面进行回答，最后附上总结。
+如果无法从中得到答案，忽略已知内容，根据回答历史和上下文，直接回答问题。
+，不要出现“角色”，“指令”，“已知信息”内的内容。如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答</指令>
+<历史信息>{{ history }}</历史信息>
 <已知信息>{{ context }}</已知信息>
 <问题>{{ question }}</问题>
 """
 
-chat_template = """<角色>你是一个生涯教育老师。你擅长教导学生进行生涯探索。你的语言风格亲切。</角色>
-<限制>不允许说自己是一个人工智能模型。</限制>
+chat_template = """<角色>你是一个高中生涯教育老师，可以为学生提供各个学科，专业方向的指导</角色>
+<限制>只能说自己是个高中生涯教育老师。不要描述自己。如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答</限制>
 <问题>{}</问题>
 """
+
 
 unsatisfy_prompt = ""
 
@@ -97,24 +112,26 @@ def dialogue_page(api: ApiRequest):
 
         dialogue_mode = st.selectbox(
             "请选择对话模式",
-            ["融合问答v2", "搜索引擎问答","LLM 对话"],
+            ["融合问答", "搜索引擎问答", "LLM 对话", "知识库问答"],
             on_change=on_mode_change,
             key="dialogue_mode",
         )
 
         def on_llm_change():
             config = get_model_worker_config(llm_model)
-            if not config.get("online_api"): # 只有本地model_worker可以切换模型
+            if not config.get("online_api"):  # 只有本地model_worker可以切换模型
                 st.session_state["prev_llm_model"] = llm_model
 
         def llm_model_format_func(x):
             if x in running_models:
                 return f"{x} (Running)"
             return x
-        
+
         def reanswer1():
             text = ""
-            for dt in api.search_engine_chat(unsatisfy_prompt, "bing", 3, model=llm_model):
+            for dt in api.search_engine_chat(
+                unsatisfy_prompt, "bing", 3, model=llm_model
+            ):
                 if error_msg := check_error_msg(dt):  # check whether error occured
                     st.error(error_msg)
                 else:
@@ -127,15 +144,19 @@ def dialogue_page(api: ApiRequest):
                 f.write(prompt + "\n\n\n")
                 st.toast("prompt保存成功")
 
-        used_template = PROMPT_TEMPLATE
-        # used_template = st.text_area("判断问题类型使用的prompt是", PROMPT_TEMPLATE, height=200)
         judge_template_save = st.text_area(
-            "判断问题类型 使用的prompt是", judge_template1, height=200
+            "判断问题类型 使用的prompt是", judge_template, height=200
         )
-        if st.button("这个prompt很棒，保存一下", key="used", use_container_width=True):
-            save_prompt(judge_template_save, "判断")
-        chat_template_save = st.text_area("闲聊问题 使用的prompt是", chat_template, height=200)
         if st.button("这个prompt很棒，保存一下", key="judge", use_container_width=True):
+            save_prompt(judge_template_save, "判断")
+        opinion_truth_judge_template_save = st.text_area(
+            "判断问题类型 使用的prompt是", opinion_truth_judge_template, height=200
+        )
+        if st.button("这个prompt很棒，保存一下", key="truth_opinion_judge", use_container_width=True):
+            save_prompt(opinion_truth_judge_template, "判断")
+
+        chat_template_save = st.text_area("闲聊问题 使用的prompt是", chat_template, height=200)
+        if st.button("这个prompt很棒，保存一下", key="chat", use_container_width=True):
             save_prompt(judge_template_save, "闲聊")
         truth_template_save = st.text_area(
             "事实问题 使用的prompt是", truth_template, height=200
@@ -156,23 +177,25 @@ def dialogue_page(api: ApiRequest):
         llm_models = running_models + config_models
         cur_model = st.session_state.get("cur_llm_model", LLM_MODEL)
         index = llm_models.index(cur_model)
-        llm_model = st.selectbox("选择LLM模型：",
-                                llm_models,
-                                index,
-                                format_func=llm_model_format_func,
-                                on_change=on_llm_change,
-                                # key="llm_model",
-                                )
-        if (st.session_state.get("prev_llm_model") != llm_model
-            and not get_model_worker_config(llm_model).get("online_api")):
+        llm_model = st.selectbox(
+            "选择LLM模型：",
+            llm_models,
+            index,
+            format_func=llm_model_format_func,
+            on_change=on_llm_change,
+            # key="llm_model",
+        )
+        if st.session_state.get(
+            "prev_llm_model"
+        ) != llm_model and not get_model_worker_config(llm_model).get("online_api"):
             with st.spinner(f"正在加载模型： {llm_model}，请勿进行操作或刷新页面"):
-                r = api.change_llm_model(st.session_state.get("prev_llm_model"), llm_model)
+                r = api.change_llm_model(
+                    st.session_state.get("prev_llm_model"), llm_model
+                )
         st.session_state["cur_llm_model"] = llm_model
 
         temperature = st.slider("Temperature：", 0.0, 1.0, TEMPERATURE, 0.05)
         history_len = st.number_input("历史对话轮数：", 0, 10, HISTORY_LEN)
-        
-        
 
         def on_kb_change():
             st.toast(f"已加载知识库： {st.session_state.selected_kb}")
@@ -187,7 +210,9 @@ def dialogue_page(api: ApiRequest):
                     key="selected_kb",
                 )
                 kb_top_k = st.number_input("匹配知识条数：", 1, 20, VECTOR_SEARCH_TOP_K)
-                score_threshold = st.slider("知识匹配分数阈值：", 0.0, 1.0, float(SCORE_THRESHOLD), 0.01)
+                score_threshold = st.slider(
+                    "知识匹配分数阈值：", 0.0, 1.0, float(SCORE_THRESHOLD), 0.01
+                )
                 # chunk_content = st.checkbox("关联上下文", False, disabled=True)
                 # chunk_size = st.slider("关联长度：", 0, 500, 250, disabled=True)
         elif dialogue_mode == "搜索引擎问答":
@@ -256,7 +281,9 @@ def dialogue_page(api: ApiRequest):
         if dialogue_mode == "LLM 对话":
             chat_box.ai_say("正在思考...")
             text = ""
-            r = api.chat_chat(prompt, history=history, model=llm_model, temperature=temperature)
+            r = api.chat_chat(
+                prompt, history=history, model=llm_model, temperature=temperature
+            )
             for t in r:
                 if error_msg := check_error_msg(t):  # check whether error occured
                     st.error(error_msg)
@@ -286,7 +313,13 @@ def dialogue_page(api: ApiRequest):
             )
             text = ""
             for d in api.knowledge_base_chat(
-                prompt, selected_kb, kb_top_k, score_threshold, history, model=llm_model,temperature=temperature
+                prompt,
+                selected_kb,
+                kb_top_k,
+                score_threshold,
+                history,
+                model=llm_model,
+                temperature=temperature,
             ):
                 if error_msg := check_error_msg(d):  # check whether error occured
                     st.error(error_msg)
@@ -304,7 +337,11 @@ def dialogue_page(api: ApiRequest):
             )
             text = ""
             for d in api.search_engine_chat(
-                prompt, search_engine, se_top_k, model=llm_model,temperature=temperature
+                prompt,
+                search_engine,
+                se_top_k,
+                model=llm_model,
+                temperature=temperature,
             ):
                 if error_msg := check_error_msg(d):  # check whether error occured
                     st.error(error_msg)
@@ -312,100 +349,33 @@ def dialogue_page(api: ApiRequest):
                     text += chunk
                     chat_box.update_msg(text, 0)
             chat_box.update_msg(text, 0, streaming=False)
-        elif dialogue_mode == "安全问答":
-            history = get_messages_history(history_len)
-            # history = []
-            chat_box.ai_say(
-                [
-                    f"正在查询知识库并过滤安全词 `{selected_kb}` ...",
-                    Markdown("...", in_expander=True, title="知识库匹配结果"),
-                ]
-            )
-            text = ""
-            docs = ""
-            for d in api.kb_safe_chat(
-                prompt, selected_kb, kb_top_k, score_threshold, history
-            ):
-                if error_msg := check_error_msg(d):  # check whether error occured
-                    st.error(error_msg)
-                docs += d["docs"]
-                text += d["answer"]
-                # chat_box.update_msg(text, 0)
-            chat_box.update_msg(docs, 1, streaming=False)
-            chat_box.update_msg(text, 0, streaming=False)
+
         elif dialogue_mode == "融合问答":
             history = get_messages_history(history_len)
+            changed_templates = [ judge_template_save, opinion_truth_judge_template_save, truth_template_save, opinion_template_save, chat_template_save]
+            text = ""
+            docs = ""
             chat_box.ai_say(
                 [
-                    f"正在查询知识库并过滤安全词 `{selected_kb}` ...",
+                    f"正在回答 `{selected_kb}` ...",
                     Markdown("...", in_expander=True, title="知识库匹配结果"),
                 ]
             )
-            text = ""
-            docs = ""
-            for d in api.merged_chat_diytemplate(
-                prompt, selected_kb, used_template, kb_top_k, score_threshold, history
+            for d in api.merged_chat_prompt_test(
+                prompt,
+                selected_kb,
+                kb_top_k,
+                score_threshold,
+                history,
+                change_templates=changed_templates
             ):
                 if error_msg := check_error_msg(d):  # check whether error occured
                     st.error(error_msg)
                 docs = d["docs"]
                 text += d["answer"]
-                # chat_box.update_msg(text, 0)
-
             chat_box.update_msg("".join(docs), 1, streaming=False)
             chat_box.update_msg(text, 0, streaming=False)
 
-        elif dialogue_mode == "融合问答v2":
-            history = get_messages_history(history_len)
-            text = ""
-            docs = ""
-            # step1 判断是哪种类型的问题
-            judge_template = judge_template_save.format(prompt)
-            r = api.chat_judge(judge_template, history=history, model=llm_model)
-            for t in r:
-                if error_msg := check_error_msg(t):  # check whether error occured
-                    st.error(error_msg)
-                    break
-                text += t
-            st.toast("问题类型判断结果为:{}".format(text))
-            if "闲聊" in text:
-                chat_box.ai_say("正在思考...")
-                text = ""
-                chat_prompt = chat_template_save.format(prompt)
-                for d in api.chat_judge(chat_prompt, history=history, model=llm_model):
-                    if error_msg := check_error_msg(d):  # check whether error occured
-                        st.error(error_msg)
-                    text += d
-                chat_box.update_msg(text, streaming=False)
-            else:
-                unsatisfy_prompt = prompt
-                if "事实" in text:
-                    used_template = truth_template_save
-                elif "观点" in text:
-                    used_template = opinion_template_save
-                text = ""
-                chat_box.ai_say(
-                    [
-                        f"正在回答 `{selected_kb}` ...",
-                        Markdown("...", in_expander=True, title="知识库匹配结果"),
-                    ]
-                )
-                for d in api.merged_chat_diytemplate(
-                    prompt,
-                    selected_kb,
-                    used_template,
-                    kb_top_k,
-                    score_threshold,
-                    history,
-                ):
-                    if error_msg := check_error_msg(d):  # check whether error occured
-                        st.error(error_msg)
-                    docs = d["docs"]
-                    text += d["answer"]
-                chat_box.update_msg("".join(docs), 1, streaming=False)
-                chat_box.update_msg(text, 0, streaming=False)
-                
-                
     now = datetime.now()
     with st.sidebar:
         cols = st.columns(2)

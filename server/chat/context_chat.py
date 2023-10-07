@@ -18,8 +18,9 @@ from urllib.parse import urlencode
 from server.knowledge_base.kb_doc_api import search_docs
 
 
-def docs_chat(query: str = Body(..., description="用户输入", examples=["你好"]),
+def context_chat(query: str = Body(..., description="用户输入", examples=["你好"]),
                         knowledge_base_name: str = Body(..., description="知识库名称", examples=["samples"]),
+                        used_template: str = Body(..., description="使用的template", examples=["你是一个生涯辅导老师"]),
                         top_k: int = Body(VECTOR_SEARCH_TOP_K, description="匹配向量数"),
                         score_threshold: float = Body(SCORE_THRESHOLD, description="知识库匹配相关度阈值，取值范围在0-1之间，SCORE越小，相关度越高，取到1相当于不筛选，建议设置在0.5左右", ge=0, le=1),
                         history: List[History] = Body([],
@@ -61,18 +62,15 @@ def docs_chat(query: str = Body(..., description="用户输入", examples=["你�
         )
         
 
-        input_msg = History(role="user", content=PROMPT_TEMPLATE).to_msg_template(False)
-        # print("sssss",input_msg.prompt)
-        # print("cccddd",context)
-        # print("hishishis",history)
+        # input_msg = History(role="user", content=PROMPT_TEMPLATE).to_msg_template(False)
+        input_msg = History(role="user", content=used_template).to_msg_template(False)
         chat_prompt = ChatPromptTemplate.from_messages(
             [i.to_msg_template() for i in history] + [input_msg])
-        print(chat_prompt.messages)
         chain = LLMChain(prompt=chat_prompt, llm=model)
 
         # Begin a task that runs in the background.
         task = asyncio.create_task(wrap_done(
-            chain.acall({"context": context, "question": query}),
+            chain.acall({"context": context, "question": query, "history":history}),
             callback.done),
         )
 

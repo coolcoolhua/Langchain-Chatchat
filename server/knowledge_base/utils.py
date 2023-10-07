@@ -203,53 +203,55 @@ def make_text_splitter(
                 text_splitter_module = importlib.import_module('text_splitter')
                 TextSplitter = getattr(text_splitter_module, splitter_name)
             except:  ## 否则使用langchain的text_splitter
+                print("使用langchain split",splitter_name)
                 text_splitter_module = importlib.import_module('langchain.text_splitter')
                 TextSplitter = getattr(text_splitter_module, splitter_name)
+            # if text_splitter_dict[splitter_name]["source"] == "tiktoken":  ## 从tiktoken加载
+            #     try:
+            #         text_splitter = TextSplitter.from_tiktoken_encoder(
+            #             encoding_name=text_splitter_dict[splitter_name]["tokenizer_name_or_path"],
+            #             pipeline="zh_core_web_sm",
+            #             chunk_size=chunk_size,
+            #             chunk_overlap=chunk_overlap
+            #         )
+            #     except:
+            #         text_splitter = TextSplitter.from_tiktoken_encoder(
+            #             encoding_name=text_splitter_dict[splitter_name]["tokenizer_name_or_path"],
+            #             chunk_size=chunk_size,
+            #             chunk_overlap=chunk_overlap
+            #         )
+            # elif text_splitter_dict[splitter_name]["source"] == "huggingface":  ## 从huggingface加载
+            #     if text_splitter_dict[splitter_name]["tokenizer_name_or_path"] == "":
+            #         text_splitter_dict[splitter_name]["tokenizer_name_or_path"] = \
+            #             llm_model_dict[LLM_MODEL]["local_model_path"]
 
-            if text_splitter_dict[splitter_name]["source"] == "tiktoken":  ## 从tiktoken加载
-                try:
-                    text_splitter = TextSplitter.from_tiktoken_encoder(
-                        encoding_name=text_splitter_dict[splitter_name]["tokenizer_name_or_path"],
-                        pipeline="zh_core_web_sm",
-                        chunk_size=chunk_size,
-                        chunk_overlap=chunk_overlap
-                    )
-                except:
-                    text_splitter = TextSplitter.from_tiktoken_encoder(
-                        encoding_name=text_splitter_dict[splitter_name]["tokenizer_name_or_path"],
-                        chunk_size=chunk_size,
-                        chunk_overlap=chunk_overlap
-                    )
-            elif text_splitter_dict[splitter_name]["source"] == "huggingface":  ## 从huggingface加载
-                if text_splitter_dict[splitter_name]["tokenizer_name_or_path"] == "":
-                    text_splitter_dict[splitter_name]["tokenizer_name_or_path"] = \
-                        llm_model_dict[LLM_MODEL]["local_model_path"]
-
-                if text_splitter_dict[splitter_name]["tokenizer_name_or_path"] == "gpt2":
-                    from transformers import GPT2TokenizerFast
-                    from langchain.text_splitter import CharacterTextSplitter
-                    tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
-                else:  ## 字符长度加载
-                    tokenizer = AutoTokenizer.from_pretrained(
-                        text_splitter_dict[splitter_name]["tokenizer_name_or_path"],
-                        trust_remote_code=True)
-                text_splitter = TextSplitter.from_huggingface_tokenizer(
-                    tokenizer=tokenizer,
+            #     if text_splitter_dict[splitter_name]["tokenizer_name_or_path"] == "gpt2":
+            #         from transformers import GPT2TokenizerFast
+            #         from langchain.text_splitter import CharacterTextSplitter
+            #         tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+            #     else:  ## 字符长度加载
+            #         tokenizer = AutoTokenizer.from_pretrained(
+            #             text_splitter_dict[splitter_name]["tokenizer_name_or_path"],
+            #             trust_remote_code=True)
+            #     text_splitter = TextSplitter.from_huggingface_tokenizer(
+            #         tokenizer=tokenizer,
+            #         chunk_size=chunk_size,
+            #         chunk_overlap=chunk_overlap
+            #     )
+            # else:
+            print("进入这里")
+            try:
+                    text_splitter = TextSplitter(
+                    separator = "\n\n@@@@@@@@@@\n\n",
                     chunk_size=chunk_size,
                     chunk_overlap=chunk_overlap
                 )
-            else:
-                try:
-                    text_splitter = TextSplitter(
-                        pipeline="zh_core_web_sm",
-                        chunk_size=chunk_size,
-                        chunk_overlap=chunk_overlap
-                    )
-                except:
-                    text_splitter = TextSplitter(
-                        chunk_size=chunk_size,
-                        chunk_overlap=chunk_overlap
-                    )
+            except:
+                text_splitter = TextSplitter(
+                    separator = "\n\n@@@@@@@@@@\n\n",
+                    chunk_size=chunk_size,
+                    chunk_overlap=chunk_overlap
+                )
     except Exception as e:
         print(e)
         text_splitter_module = importlib.import_module('langchain.text_splitter')
@@ -277,17 +279,12 @@ class KnowledgeFile:
         self.document_loader_name = get_LoaderClass(self.ext)
         self.text_splitter_name = TEXT_SPLITTER
 
-<<<<<<< HEAD
-        # TODO: 增加依据文件格式匹配text_splitter
-        self.text_splitter_name = 'CharacterTextSplitter'
-=======
     def file2docs(self, refresh: bool=False):
         if self.docs is None or refresh:
             logger.info(f"{self.document_loader_name} used for {self.filepath}")
             loader = get_loader(self.document_loader_name, self.filepath)
             self.docs = loader.load()
         return self.docs
->>>>>>> upstream/master
 
     def docs2texts(
         self,
@@ -303,7 +300,9 @@ class KnowledgeFile:
             return []
         if self.ext not in [".csv"]:
             if text_splitter is None:
-                text_splitter = make_text_splitter(splitter_name=self.text_splitter_name, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+                text_splitter = make_text_splitter(splitter_name=self.text_splitter_name,  
+                                                   chunk_size = 10,
+                                                   chunk_overlap= 0,)
             if self.text_splitter_name == "MarkdownHeaderTextSplitter":
                 docs = text_splitter.split_text(docs[0].page_content)
                 for doc in docs:
@@ -313,47 +312,8 @@ class KnowledgeFile:
             else:
                 docs = text_splitter.split_documents(docs)
 
-<<<<<<< HEAD
-        if self.ext in ".csv":
-            docs = loader.load()
-        else:
-            try:
-                if self.text_splitter_name is None:
-                    text_splitter_module = importlib.import_module('langchain.text_splitter')
-                    TextSplitter = getattr(text_splitter_module, "SpacyTextSplitter")
-                    text_splitter = TextSplitter(
-                        pipeline="zh_core_web_sm",
-                        chunk_size=10,
-                        chunk_overlap=OVERLAP_SIZE,
-                    )
-                    self.text_splitter_name = "SpacyTextSplitter"
-                else:
-                    text_splitter_module = importlib.import_module('langchain.text_splitter')
-                    TextSplitter = getattr(text_splitter_module, self.text_splitter_name)
-                    text_splitter = TextSplitter(
-                        separator = "\n\n@@@@@@@@@@\n\n",
-                        chunk_size = 10,
-                        chunk_overlap= 0,
-                        
-                    )
-            except Exception as e:
-                print(e)
-                # text_splitter_module = importlib.import_module('langchain.text_splitter')
-                # TextSplitter = getattr(text_splitter_module, "CharacterTextSplitter")
-                text_splitter = CharacterTextSplitter(
-                    separator = "\n\n@@@@@@@@@@\n\n",
-                    chunk_size = 300,
-                    chunk_overlap= 0,
-                    
-                )
-
-            docs = loader.load_and_split(text_splitter)
-        print(docs[0])
-        if using_zh_title_enhance:
-=======
-        print(f"文档切分示例：{docs[0]}")
+        print(f"文档切分示例：{docs[:5]}")
         if zh_title_enhance:
->>>>>>> upstream/master
             docs = zh_title_enhance(docs)
         self.splited_docs = docs
         return self.splited_docs

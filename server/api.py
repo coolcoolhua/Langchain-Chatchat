@@ -12,11 +12,16 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 from server.chat import (chat, knowledge_base_chat, openai_chat,
-                         search_engine_chat, kb_safe_chat, kb_safe_chat_v2,
-                         merged_chat, docs_chat,
-                         merged_chat_diytemplate,docs_chat_diytemplate,
-                         chat_judge,merged_chat_v2,
-                         search_engine_docs
+                         search_engine_chat, kb_safe_chat, 
+                         context_chat,
+                         chat_judge,
+                         merged_chat,
+                         merged_chat_prompt_test,
+                         search_engine_docs,
+                         unsatisfy_question_chat,
+                         bert_chat_judge,
+                         bert_truth_judge,
+                         bert_relevance_judge
                          )
 from server.knowledge_base.kb_api import list_kbs, create_kb, delete_kb
 from server.knowledge_base.kb_doc_api import (list_files, upload_docs, delete_docs,
@@ -65,7 +70,7 @@ def create_app():
              summary="与llm模型对话(通过LLMChain)")(chat)
     app.post("/chat/chat_judge",
             tags=["Chat"],
-            summary="判断是哪种问题)")(chat)
+            summary="判断是哪种问题)")(chat_judge)
     
     app.post("/chat/knowledge_base_chat",
              tags=["Chat"],
@@ -79,28 +84,32 @@ def create_app():
              tags=["Chat"],
              summary="返回搜索引擎文档和上下文")(search_engine_docs)
     
+    app.post("/chat/bert_chat_judge",
+             tags=["Chat"],
+             summary="bert判断是闲聊意图还是职业意图")(bert_chat_judge)
+    app.post("/chat/bert_truth_judge",
+             tags=["Chat"],
+             summary="bert判断是事实意图还是观点意图")(bert_truth_judge)
+    app.post("/chat/bert_relevance_judge",
+             tags=["Chat"],
+             summary="bert判断是事实意图还是观点意图")(bert_relevance_judge)
+    
     
     app.post("/chat/kb_safe_chat",
              tags=["Chat"],
              summary="知识库问答+敏感词过滤")(kb_safe_chat)
-    app.post("/chat/kb_safe_chat_v2",
-             tags=["Chat"],
-             summary="知识库问答+敏感词过滤")(kb_safe_chat_v2)
     app.post("/chat/merged_chat",
             tags=["Chat"],
             summary="知识库问答+敏感词过滤")(merged_chat)
-    app.post("/chat/merged_chat_v2",
+    app.post("/chat/merged_chat_prompt_test",
             tags=["Chat"],
-            summary="知识库问答+敏感词过滤")(merged_chat_v2)
-    app.post("/chat/merged_chat_diytemplate",
-            tags=["Chat"],
-            summary="知识库问答+敏感词过滤+自定义prompt")(merged_chat_diytemplate)
-    app.post("/chat/docs_chat",
-            tags=["Chat"],
-            summary="知识库问答+敏感词过滤")(docs_chat)
-    app.post("/chat/docs_chat_diytemplate",
-        tags=["Chat"],
-        summary="知识库问答+敏感词过滤+自定义prompt")(docs_chat_diytemplate)
+            summary="知识库问答+敏感词过滤")(merged_chat_prompt_test)
+    app.post("/chat/context_chat",
+             tags=["Chat"],
+             summary="知识库问答+敏感词过滤+自定义prompt")(context_chat)
+    app.post("/chat/answer_again",
+             tags=["Chat"],
+             summary="对于不满意的回答重新用搜索引擎回答")(unsatisfy_question_chat)
 
     # Tag: Knowledge Base Management
     app.get("/knowledge_base/list_knowledge_bases",
@@ -190,8 +199,9 @@ def run_api(host, port, **kwargs):
                     ssl_certfile=kwargs.get("ssl_certfile"),
                     )
     else:
-        uvicorn.run('api:app', host=host, port=port, workers=2 )
-
+        # uvicorn.run('api:app', host=host, port=port, workers=4 )
+        uvicorn.run('api:app', host=host, port=port, reload= True )
+        # uvicorn.run(app,host=host,port=port)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='langchain-ChatGLM',

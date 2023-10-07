@@ -331,8 +331,8 @@ class ApiRequest:
             "temperature": temperature,
         }
 
-        print(f"received input message:")
-        pprint(data)
+        # print(f"received input message:")
+        # pprint(data)
 
         if no_remote_api:
             from server.chat.chat import chat
@@ -364,7 +364,7 @@ class ApiRequest:
         }
 
         # print(f"chat judge received input message:")
-        pprint(data)
+        # pprint(data)
         if no_remote_api:
             from server.chat.chat_judge import chat_judge
             response = chat_judge(**data)
@@ -418,91 +418,8 @@ class ApiRequest:
             )
             return self._httpx_stream2generator(response, as_json=True)
         
-    def kb_safe_chat(
-        self,
-        query: str,
-        knowledge_base_name: str,
-        top_k: int = VECTOR_SEARCH_TOP_K,
-        score_threshold: float = SCORE_THRESHOLD,
-        history: List[Dict] = [],
-        stream: bool = False,
-        no_remote_api: bool = None,
-    ):
-        '''
-        对应api.py/chat/knowledge_base_chat接口
-        '''
-        if no_remote_api is None:
-            no_remote_api = self.no_remote_api
-        data = {
-            "query": query,
-            "knowledge_base_name": knowledge_base_name,
-            "top_k": top_k,
-            "score_threshold": score_threshold,
-            "history": history,
-            "stream": False,
-            "local_doc_url": no_remote_api,
-        }
-        
-        print(f"received input message:")
-        pprint(data)
-
-        if no_remote_api:
-            from server.chat.kb_safe_chat_v2 import kb_safe_chat_v2
-            response = kb_safe_chat_v2(**data)
-            return self._fastapi_stream2generator(response, as_json=True)
-        else:
-            response = self.post(
-                "/chat/kb_safe_chat_v2",
-                json=data,
-                stream=True,
-            )
-            return self._httpx_stream2generator(response, as_json=True)
-        
-    def docs_chat(
-        self,
-        query: str,
-        knowledge_base_name: str,
-        top_k: int = VECTOR_SEARCH_TOP_K,
-        score_threshold: float = SCORE_THRESHOLD,
-        history: List[Dict] = [],
-        docs: List = [],
-        context: str = "",
-        stream: bool = False,
-        no_remote_api: bool = None,
-    ):
-        '''
-        对应api.py/chat/docs_chat接口
-        '''
-        if no_remote_api is None:
-            no_remote_api = self.no_remote_api
-        data = {
-            "query": query,
-            "knowledge_base_name": knowledge_base_name,
-            "top_k": top_k,
-            "score_threshold": score_threshold,
-            "history": history,
-            "docs": [],
-            "context" :context,
-            "stream": False,
-            "local_doc_url": no_remote_api,
-        }
-        
-        print(f"docschat received input message:")
-        pprint(data)
-
-        if no_remote_api:
-            from server.chat.docs_chat import docs_chat
-            response = docs_chat(**data)
-            return self._fastapi_stream2generator(response, as_json=True)
-        else:
-            response = self.post(
-                "/chat/docs_chat",
-                json=data,
-                stream=True,
-            )
-            return self._httpx_stream2generator(response, as_json=True)
     
-    def docs_chat_diytemplate(
+    def context_chat(
         self,
         query: str,
         knowledge_base_name: str,
@@ -534,100 +451,16 @@ class ApiRequest:
             "used_template": used_template
         }
         
-        # print(f"docschat_diytemplate received input message:")
-        pprint(data)
+        # print(f"contextchat received input message:")
+        # pprint(data)
 
         if no_remote_api:
-            from server.chat.docs_chat_diytemplate import docs_chat_diytemplate
-            response = docs_chat_diytemplate(**data)
+            from server.chat.context_chat import context_chat
+            response = context_chat(**data)
             return self._fastapi_stream2generator(response, as_json=True)
         else:
             response = self.post(
-                "/chat/docs_chat_diytemplate",
-                json=data,
-                stream=True,
-            )
-            return self._httpx_stream2generator(response, as_json=True)
-        
-          
-    def merged_chat(
-        self,
-        query: str,
-        knowledge_base_name: str,
-        top_k: int = VECTOR_SEARCH_TOP_K,
-        score_threshold: float = SCORE_THRESHOLD,
-        history: List[Dict] = [],
-        stream: bool = False,
-        no_remote_api: bool = None,
-    ):
-        '''
-        对应api.py/chat/knowledge_base_chat接口
-        '''
-        if no_remote_api is None:
-            no_remote_api = self.no_remote_api
-        data = {
-            "query": query,
-            "knowledge_base_name": knowledge_base_name,
-            "top_k": top_k,
-            "score_threshold": score_threshold,
-            "history": history,
-            "stream": False,
-            "local_doc_url": no_remote_api,
-        }
-        
-        # print(f"received input message:")
-        pprint(data)
-
-        if no_remote_api:
-            from server.chat.merged_chat_v2_ import merged_chat_v2
-            response = merged_chat(**data)
-            return self._fastapi_stream2generator(response, as_json=True)
-        else:
-            response = self.post(
-                "/chat/merged_chat_v2",
-                json=data,
-                stream=True,
-            )
-            return self._httpx_stream2generator(response, as_json=True)
-        
-    def merged_chat_diytemplate(
-        self,
-        query: str,
-        knowledge_base_name: str,
-        used_template: str,
-        top_k: int = VECTOR_SEARCH_TOP_K,
-        score_threshold: float = SCORE_THRESHOLD,
-        history: List[Dict] = [],
-        stream: bool = False,
-        no_remote_api: bool = None,
-        
-    ):
-        '''
-        对应api.py/chat/knowledge_base_chat接口
-        '''
-        if no_remote_api is None:
-            no_remote_api = self.no_remote_api
-        data = {
-            "query": query,
-            "knowledge_base_name": knowledge_base_name,
-            "top_k": top_k,
-            "score_threshold": score_threshold,
-            "history": history,
-            "stream": False,
-            "local_doc_url": no_remote_api,
-            "used_template":used_template
-        }
-        
-        # print(f"mergedchat_v2 received input message:")
-        pprint(data)
-
-        if no_remote_api:
-            from server.chat.merged_chat_v2 import merged_chat_v2
-            response = merged_chat_v2(**data)
-            return self._fastapi_stream2generator(response, as_json=True)
-        else:
-            response = self.post(
-                "/chat/merged_chat_v2",
+                "/chat/context_chat",
                 json=data,
                 stream=True,
             )
@@ -660,6 +493,129 @@ class ApiRequest:
         }
 
         print(f"search_engine received input message:")
+        pprint(data)
+
+        if no_remote_api:
+            from server.chat.search_engine_chat import search_engine_chat
+            response = run_async(search_engine_chat(**data))
+            return self._fastapi_stream2generator(response, as_json=True)
+        else:
+            response = self.post(
+                "/chat/search_engine_chat",
+                json=data,
+                stream=True,
+            )
+            return self._httpx_stream2generator(response, as_json=True)
+        
+    def merged_chat(
+        self,
+        query: str,
+        knowledge_base_name: str,
+        top_k: int = VECTOR_SEARCH_TOP_K,
+        score_threshold: float = SCORE_THRESHOLD,
+        history: List[Dict] = [],
+        stream: bool = False,
+        no_remote_api: bool = None,
+    ):
+        '''
+        对应api.py/chat/knowledge_base_chat接口
+        '''
+        if no_remote_api is None:
+            no_remote_api = self.no_remote_api
+        data = {
+            "query": query,
+            "knowledge_base_name": knowledge_base_name,
+            "top_k": top_k,
+            "score_threshold": score_threshold,
+            "history": history,
+            "stream": False,
+            "local_doc_url": no_remote_api,
+        }
+        
+        # print(f"received input message:")
+        pprint(data)
+
+        if no_remote_api:
+            from server.chat.merged_chat import merged_chat
+            response = merged_chat(**data)
+            return self._fastapi_stream2generator(response, as_json=True)
+        else:
+            response = self.post(
+                "/chat/merged_chat",
+                json=data,
+                stream=True,
+            )
+            return self._httpx_stream2generator(response, as_json=True)
+        
+        
+    def merged_chat_prompt_test(
+        self,
+        query: str,
+        knowledge_base_name: str,
+        top_k: int = VECTOR_SEARCH_TOP_K,
+        score_threshold: float = SCORE_THRESHOLD,
+        history: List[Dict] = [],
+        stream: bool = False,
+        no_remote_api: bool = None,
+        change_templates: List = []
+    ):
+        '''
+        '''
+        if no_remote_api is None:
+            no_remote_api = self.no_remote_api
+        data = {
+            "query": query,
+            "knowledge_base_name": knowledge_base_name,
+            "top_k": top_k,
+            "score_threshold": score_threshold,
+            "history": history,
+            "stream": False,
+            "local_doc_url": no_remote_api,
+            "change_templates": change_templates
+        }
+        
+        # print(f"received input message:")
+        pprint(data)
+
+        if no_remote_api:
+            from server.chat.merged_chat_prompt_test import merged_chat_prompt_test
+            response = merged_chat_prompt_test(**data)
+            return self._fastapi_stream2generator(response, as_json=True)
+        else:
+            response = self.post(
+                "/chat/merged_chat_prompt_test",
+                json=data,
+                stream=True,
+            )
+            return self._httpx_stream2generator(response, as_json=True)
+    
+    
+    def unsatisfy_question_chat(
+        self,
+        query: str,
+        search_engine_name: str,
+        top_k: int = SEARCH_ENGINE_TOP_K,
+        stream: bool = False,
+        model: str = LLM_MODEL,
+        temperature: float = TEMPERATURE,
+        no_remote_api: bool = None,
+    ):
+        '''
+        对应api.py/chat/search_engine_chat接口
+        '''
+        if no_remote_api is None:
+            no_remote_api = self.no_remote_api
+
+        data = {
+            "query": query,
+            "search_engine_name": search_engine_name,
+            "top_k": top_k,
+            "stream": stream,
+            "model_name": model,
+            "temperature": temperature,
+        }
+
+        print(f"unsatisfy received input message:")
         pprint(data)
 
         if no_remote_api:
@@ -1132,12 +1088,6 @@ def check_success_msg(data: Union[str, dict, list], key: str = "msg") -> str:
         and data["code"] == 200):
         return data[key]
     return ""
-
-def llm_test():
-    '''
-    '''
-    print("ahah")
-    # st.toast("haha")
 
 
 if __name__ == "__main__":

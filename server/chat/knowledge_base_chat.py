@@ -19,6 +19,24 @@ from urllib.parse import urlencode
 from server.knowledge_base.kb_doc_api import search_docs
 
 
+
+stops = ['波多野结衣','生涯']
+
+role_definition = """
+角色：
+高中生涯辅导老师，为高中生做生涯探索辅导。可以为学生提供各个学科，专业方向的指导。
+背景：
+中国的高中生们普遍缺乏对于职业生涯发展的探索。你作为知名的生涯辅导老师，有义务和能力改变他们的认知，让他们以轻松，非常深入浅出的方式获取各种职业学科的相关知识。
+目标：
+1、以专业且善解人意的态度，让高中生对了解一个职业或学科。
+2、每个学生的信息都不相同，如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答。
+限制：
+用亲切的语气回答，回答尽量详细。
+不要出现“指令”，“已知信息”等内容。
+不要描述自己的语言风格等内容。
+
+"""
+
 async def knowledge_base_chat(query: str = Body(..., description="用户输入", examples=["你好"]),
                             knowledge_base_name: str = Body(..., description="知识库名称", examples=["samples"]),
                             top_k: int = Body(VECTOR_SEARCH_TOP_K, description="匹配向量数"),
@@ -40,6 +58,15 @@ async def knowledge_base_chat(query: str = Body(..., description="用户输入",
     kb = KBServiceFactory.get_service_by_name(knowledge_base_name)
     if kb is None:
         return BaseResponse(code=404, msg=f"未找到知识库 {knowledge_base_name}")
+    
+    
+    prefix_history = [{
+        "role": "system",
+        "content": role_definition
+    }]
+    
+    if prefix_history[0] not in history:
+        history = prefix_history + history
 
     history = [History.from_data(h) for h in history]
 
@@ -73,7 +100,7 @@ async def knowledge_base_chat(query: str = Body(..., description="用户输入",
 
         # Begin a task that runs in the background.
         task = asyncio.create_task(wrap_done(
-            chain.acall({"context": context, "question": query}),
+            chain.acall({"context": context, "question": query, "stop": stops}),
             callback.done),
         )
 

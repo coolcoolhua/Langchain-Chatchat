@@ -10,13 +10,6 @@ import os
 from typing import Literal, Any, List
 
 
-<<<<<<< HEAD
-pool = ThreadPoolExecutor(os.cpu_count())
-print("cpu数量",os.cpu_count())
-
-
-=======
->>>>>>> upstream/master
 def create_tables():
     Base.metadata.create_all(bind=engine)
 

@@ -3,11 +3,12 @@ from .knowledge_base_chat import knowledge_base_chat
 from .openai_chat import openai_chat
 from .search_engine_chat import search_engine_chat
 from .kb_safe_chat import kb_safe_chat
-from .kb_safe_chat_v2 import kb_safe_chat_v2
 from .merged_chat import merged_chat
-from .merged_chat_v2 import merged_chat_v2
-from .merged_chat_diytemplate import merged_chat_diytemplate
-from .docs_chat import docs_chat
-from .docs_chat_diytemplate import docs_chat_diytemplate
+from .merged_chat_prompt_test import merged_chat_prompt_test
+from .context_chat import context_chat
 from .chat_judge import chat_judge
 from .search_engine_docs import search_engine_docs
+from .unsatisfy_question_chat import unsatisfy_question_chat
+from .bert_chat_judge import bert_chat_judge
+from .bert_truth_judge import bert_truth_judge
+from .bert_relevance_judge import bert_relevance_judge
