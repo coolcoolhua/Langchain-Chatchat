@@ -1,20 +1,13 @@
 import streamlit as st
-from configs.server_config import FSCHAT_MODEL_WORKERS
 from webui_pages.utils import *
 from streamlit_chatbox import *
 from datetime import datetime
 from server.chat.search_engine_chat import SEARCH_ENGINES
 import os
-from configs.model_config import (
-    llm_model_dict,
-    LLM_MODEL,
-    MERGED_MAX_DOCS_NUM,
-    PROMPT_TEMPLATE,
-    TEMPERATURE,
-)
+from configs import (LLM_MODEL, MERGED_MAX_DOCS_NUM, TEMPERATURE)
+
 from server.utils import get_model_worker_config
 from typing import List, Dict
-
 
 chat_box = ChatBox(
     assistant_avatar=os.path.join("img", "chatchat_icon_blue_square_v2.png")
@@ -67,32 +60,24 @@ chat_template = """<角色>你是一个高中生涯教育老师，可以为学�
 unsatisfy_prompt = ""
 
 
-def get_messages_history(history_len: int) -> List[Dict]:
+def get_messages_history(history_len: int, content_in_expander: bool = False) -> List[Dict]:
+    '''
+    返回消息历史。
+    content_in_expander控制是否返回expander元素中的内容，一般导出的时候可以选上，传入LLM的history不需要
+    '''
+
     def filter(msg):
-        """
-        针对当前简单文本对话，只返回每条消息的第一个element的内容
-        """
-        content = [
-            x._content
-            for x in msg["elements"]
-            if x._output_method in ["markdown", "text"]
-        ]
+        content = [x for x in msg["elements"] if x._output_method in ["markdown", "text"]]
+        if not content_in_expander:
+            content = [x for x in content if not x._in_expander]
+        content = [x.content for x in content]
+
         return {
             "role": msg["role"],
-            "content": content[0] if content else "",
+            "content": "\n\n".join(content),
         }
 
-    history = chat_box.filter_history(
-        100000, filter
-    )  # workaround before upgrading streamlit-chatbox.
-    user_count = 0
-    i = 1
-    for i in range(1, len(history) + 1):
-        if history[-i]["role"] == "user":
-            user_count += 1
-            if user_count >= history_len:
-                break
-    return history[-i:]
+    return chat_box.filter_history(history_len=history_len, filter=filter)
 
 
 def dialogue_page(api: ApiRequest):
@@ -121,6 +106,7 @@ def dialogue_page(api: ApiRequest):
             config = get_model_worker_config(llm_model)
             if not config.get("online_api"):  # 只有本地model_worker可以切换模型
                 st.session_state["prev_llm_model"] = llm_model
+            st.session_state["cur_llm_model"] = st.session_state.llm_model
 
         def llm_model_format_func(x):
             if x in running_models:
@@ -170,32 +156,37 @@ def dialogue_page(api: ApiRequest):
             save_prompt(opinion_template_save, "观点")
 
         running_models = api.list_running_models()
+        available_models = []
         config_models = api.list_config_models()
-        for x in running_models:
-            if x in config_models:
-                config_models.remove(x)
-        llm_models = running_models + config_models
-        cur_model = st.session_state.get("cur_llm_model", LLM_MODEL)
-        index = llm_models.index(cur_model)
-        llm_model = st.selectbox(
-            "选择LLM模型：",
-            llm_models,
-            index,
-            format_func=llm_model_format_func,
-            on_change=on_llm_change,
-            # key="llm_model",
-        )
-        if st.session_state.get(
-            "prev_llm_model"
-        ) != llm_model and not get_model_worker_config(llm_model).get("online_api"):
+        for models in config_models.values():
+            for m in models:
+                if m not in running_models:
+                    available_models.append(m)
+        llm_models = running_models + available_models
+        index = llm_models.index(st.session_state.get("cur_llm_model", LLM_MODEL))
+        llm_model = st.selectbox("选择LLM模型：",
+                                 llm_models,
+                                 index,
+                                 format_func=llm_model_format_func,
+                                 on_change=on_llm_change,
+                                 key="llm_model",
+                                 )
+        if (st.session_state.get("prev_llm_model") != llm_model
+                and not get_model_worker_config(llm_model).get("online_api")
+                and llm_model not in running_models):
             with st.spinner(f"正在加载模型： {llm_model}，请勿进行操作或刷新页面"):
-                r = api.change_llm_model(
-                    st.session_state.get("prev_llm_model"), llm_model
-                )
-        st.session_state["cur_llm_model"] = llm_model
+                prev_model = st.session_state.get("prev_llm_model")
+                r = api.change_llm_model(prev_model, llm_model)
+                if msg := check_error_msg(r):
+                    st.error(msg)
+                elif msg := check_success_msg(r):
+                    st.success(msg)
+                    st.session_state["prev_llm_model"] = llm_model
 
-        temperature = st.slider("Temperature：", 0.0, 1.0, TEMPERATURE, 0.05)
-        history_len = st.number_input("历史对话轮数：", 0, 10, HISTORY_LEN)
+        temperature = st.slider("Temperature：", 0.0, 1.0, TEMPERATURE, 0.01)
+
+        ## 部分模型可以超过10抡对话
+        history_len = st.number_input("历史对话轮数：", 0, 20, HISTORY_LEN)
 
         def on_kb_change():
             st.toast(f"已加载知识库： {st.session_state.selected_kb}")
@@ -210,9 +201,10 @@ def dialogue_page(api: ApiRequest):
                     key="selected_kb",
                 )
                 kb_top_k = st.number_input("匹配知识条数：", 1, 20, VECTOR_SEARCH_TOP_K)
-                score_threshold = st.slider(
-                    "知识匹配分数阈值：", 0.0, 1.0, float(SCORE_THRESHOLD), 0.01
-                )
+
+                ## Bge 模型会超过1
+                score_threshold = st.slider("知识匹配分数阈值：", 0.0, 1.0, float(SCORE_THRESHOLD), 0.01)
+
                 # chunk_content = st.checkbox("关联上下文", False, disabled=True)
                 # chunk_size = st.slider("关联长度：", 0, 500, 250, disabled=True)
         elif dialogue_mode == "搜索引擎问答":
@@ -291,26 +283,35 @@ def dialogue_page(api: ApiRequest):
                 text += t
                 chat_box.update_msg(text)
             chat_box.update_msg(text, streaming=False)  # 更新最终的字符串，去除光标
-        elif dialogue_mode == "问答判断":
-            chat_box.ai_say("正在思考...")
+        elif dialogue_mode == "自定义Agent问答":
+            chat_box.ai_say([
+                f"正在思考和寻找工具 ...",])
             text = ""
-            r = api.chat_judge(prompt, history=[], model=llm_model)
-            for t in r:
-                if error_msg := check_error_msg(t):  # check whether error occured
+            element_index = 0
+            for d in api.agent_chat(prompt,
+                                    history=history,
+                                    model=llm_model,
+                                    temperature=temperature):
+                try:
+                    d = json.loads(d)
+                except:
+                    pass
+                if error_msg := check_error_msg(d):  # check whether error occured
                     st.error(error_msg)
-                    break
-                text += t
-                chat_box.update_msg(text)
-            chat_box.update_msg(text, streaming=False)  # 更新最终的字符串，去除光标
 
+                elif chunk := d.get("answer"):
+                    text += chunk
+                    chat_box.update_msg(text, element_index=0)
+                elif chunk := d.get("tools"):
+                    element_index += 1
+                    chat_box.insert_msg(Markdown("...", in_expander=True, title="使用工具...", state="complete"))
+                    chat_box.update_msg("\n\n".join(d.get("tools", [])), element_index=element_index, streaming=False)
+            chat_box.update_msg(text, element_index=0, streaming=False)
         elif dialogue_mode == "知识库问答":
-            history = get_messages_history(history_len)
-            chat_box.ai_say(
-                [
-                    f"正在查询知识库 `{selected_kb}` ...",
-                    Markdown("...", in_expander=True, title="知识库匹配结果"),
-                ]
-            )
+            chat_box.ai_say([
+                f"正在查询知识库 `{selected_kb}` ...",
+                Markdown("...", in_expander=True, title="知识库匹配结果", state="complete"),
+            ])
             text = ""
             for d in api.knowledge_base_chat(
                 prompt,
@@ -325,56 +326,28 @@ def dialogue_page(api: ApiRequest):
                     st.error(error_msg)
                 elif chunk := d.get("answer"):
                     text += chunk
-                    chat_box.update_msg(text, 0)
-            chat_box.update_msg(text, 0, streaming=False)
-            chat_box.update_msg("\n\n".join(d.get("docs", [])), 1, streaming=False)
+                    chat_box.update_msg(text, element_index=0)
+            chat_box.update_msg(text, element_index=0, streaming=False)
+            chat_box.update_msg("\n\n".join(d.get("docs", [])), element_index=1, streaming=False)
         elif dialogue_mode == "搜索引擎问答":
-            chat_box.ai_say(
-                [
-                    f"正在执行 `{search_engine}` 搜索...",
-                    Markdown("...", in_expander=True, title="网络搜索结果"),
-                ]
-            )
+            chat_box.ai_say([
+                f"正在执行 `{search_engine}` 搜索...",
+                Markdown("...", in_expander=True, title="网络搜索结果", state="complete"),
+            ])
             text = ""
-            for d in api.search_engine_chat(
-                prompt,
-                search_engine,
-                se_top_k,
-                model=llm_model,
-                temperature=temperature,
-            ):
+            for d in api.search_engine_chat(prompt,
+                                            search_engine_name=search_engine,
+                                            top_k=se_top_k,
+                                            history=history,
+                                            model=llm_model,
+                                            temperature=temperature):
                 if error_msg := check_error_msg(d):  # check whether error occured
                     st.error(error_msg)
                 elif chunk := d.get("answer"):
                     text += chunk
-                    chat_box.update_msg(text, 0)
-            chat_box.update_msg(text, 0, streaming=False)
-
-        elif dialogue_mode == "融合问答":
-            history = get_messages_history(history_len)
-            changed_templates = [ judge_template_save, opinion_truth_judge_template_save, truth_template_save, opinion_template_save, chat_template_save]
-            text = ""
-            docs = ""
-            chat_box.ai_say(
-                [
-                    f"正在回答 `{selected_kb}` ...",
-                    Markdown("...", in_expander=True, title="知识库匹配结果"),
-                ]
-            )
-            for d in api.merged_chat_prompt_test(
-                prompt,
-                selected_kb,
-                kb_top_k,
-                score_threshold,
-                history,
-                change_templates=changed_templates
-            ):
-                if error_msg := check_error_msg(d):  # check whether error occured
-                    st.error(error_msg)
-                docs = d["docs"]
-                text += d["answer"]
-            chat_box.update_msg("".join(docs), 1, streaming=False)
-            chat_box.update_msg(text, 0, streaming=False)
+                    chat_box.update_msg(text, element_index=0)
+            chat_box.update_msg(text, element_index=0, streaming=False)
+            chat_box.update_msg("\n\n".join(d.get("docs", [])), element_index=1, streaming=False)
 
     now = datetime.now()
     with st.sidebar:

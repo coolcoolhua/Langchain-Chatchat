@@ -1,8 +1,9 @@
 from fastapi import Body, Request
 from fastapi.responses import StreamingResponse
-from configs.model_config import (llm_model_dict, LLM_MODEL, PROMPT_TEMPLATE,
-                                  VECTOR_SEARCH_TOP_K, SCORE_THRESHOLD)
-from server.chat.utils import wrap_done
+from configs.model_config import (LLM_MODEL)
+from configs.kb_config import VECTOR_SEARCH_TOP_K, SCORE_THRESHOLD
+from configs import LLM_MODEL, TEMPERATURE
+from server.utils import wrap_done, get_ChatOpenAI
 from server.utils import BaseResponse
 from langchain.chat_models import ChatOpenAI
 from langchain import LLMChain
@@ -31,7 +32,10 @@ def context_chat(query: str = Body(..., description="用户输入", examples=["�
                                                           {"role": "assistant",
                                                            "content": "虎头虎脑"}]]
                                                       ),
-                        docs: List = [],
+                        docs: List = Body([],
+                                          description="相关文档",
+                                          examples=[]
+                                          ),
                         context: str = Body("",description="上下文"),
                         stream: bool = Body(False, description="流式输出"),
                         model_name: str = Body(LLM_MODEL, description="LLM 模型名称。"),
@@ -51,14 +55,10 @@ def context_chat(query: str = Body(..., description="用户输入", examples=["�
                                            model_name: str = LLM_MODEL,
                                            ) -> AsyncIterable[str]:
         callback = AsyncIteratorCallbackHandler()
-        model = ChatOpenAI(
-            streaming=True,
-            verbose=True,
-            callbacks=[callback],
-            openai_api_key=llm_model_dict[model_name]["api_key"],
-            openai_api_base=llm_model_dict[model_name]["api_base_url"],
+        model = get_ChatOpenAI(
             model_name=model_name,
-            openai_proxy=llm_model_dict[model_name].get("openai_proxy")
+            temperature=TEMPERATURE,
+            callbacks=[callback],
         )
         
 

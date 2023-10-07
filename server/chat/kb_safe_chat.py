@@ -1,8 +1,8 @@
 from fastapi import Body, Request
 from fastapi.responses import StreamingResponse
-from configs.model_config import (llm_model_dict, LLM_MODEL, PROMPT_TEMPLATE,
-                                  VECTOR_SEARCH_TOP_K, SCORE_THRESHOLD)
-from server.chat.utils import wrap_done
+from configs.model_config import (LLM_MODEL)
+from configs.kb_config import VECTOR_SEARCH_TOP_K, SCORE_THRESHOLD
+from server.utils import wrap_done
 from server.utils import BaseResponse
 from langchain.chat_models import ChatOpenAI
 from langchain import LLMChain
@@ -53,8 +53,8 @@ def kb_safe_chat(query: str = Body(..., description="用户输入", examples=["�
       
         docs = search_docs(query, knowledge_base_name, top_k, score_threshold)
         context = "\n".join([doc.page_content for doc in docs])
-
-        input_msg = History(role="user", content=PROMPT_TEMPLATE).to_msg_template(False)
+        prompt_template = """"""
+        input_msg = History(role="user", content=prompt_template).to_msg_template(False)
         chat_prompt = ChatPromptTemplate.from_messages(
             [i.to_msg_template() for i in history] + [input_msg])
 

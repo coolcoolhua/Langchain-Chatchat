@@ -16,18 +16,19 @@ from server.chat import (chat, knowledge_base_chat, openai_chat,
                          context_chat,
                          chat_judge,
                          merged_chat,
-                         merged_chat_prompt_test,
                          search_engine_docs,
                          unsatisfy_question_chat,
                          bert_chat_judge,
                          bert_truth_judge,
-                         bert_relevance_judge
+                         bert_relevance_judge,
+                         search_engine_chat, agent_chat,
+                         chat_stop
                          )
 from server.knowledge_base.kb_api import list_kbs, create_kb, delete_kb
 from server.knowledge_base.kb_doc_api import (list_files, upload_docs, delete_docs,
                                               update_docs, download_doc, recreate_vector_store,
                                               search_docs, DocumentWithScore)
-from server.llm_api import list_llm_models, change_llm_model,  stop_llm_model
+from server.llm_api import list_running_models, list_config_models, change_llm_model, stop_llm_model
 from server.utils import BaseResponse, ListResponse, FastAPI, MakeFastAPIOffline
 from typing import List
 
@@ -68,6 +69,9 @@ def create_app():
     app.post("/chat/chat",
              tags=["Chat"],
              summary="与llm模型对话(通过LLMChain)")(chat)
+    app.post("/chat/chat_stop",
+             tags=["Chat"],
+             summary="与llm模型对话(通过LLMChain)")(chat_stop)
     app.post("/chat/chat_judge",
             tags=["Chat"],
             summary="判断是哪种问题)")(chat_judge)
@@ -101,15 +105,16 @@ def create_app():
     app.post("/chat/merged_chat",
             tags=["Chat"],
             summary="知识库问答+敏感词过滤")(merged_chat)
-    app.post("/chat/merged_chat_prompt_test",
-            tags=["Chat"],
-            summary="知识库问答+敏感词过滤")(merged_chat_prompt_test)
     app.post("/chat/context_chat",
              tags=["Chat"],
              summary="知识库问答+敏感词过滤+自定义prompt")(context_chat)
     app.post("/chat/answer_again",
              tags=["Chat"],
              summary="对于不满意的回答重新用搜索引擎回答")(unsatisfy_question_chat)
+
+    app.post("/chat/agent_chat",
+             tags=["Chat"],
+             summary="与agent对话")(agent_chat)
 
     # Tag: Knowledge Base Management
     app.get("/knowledge_base/list_knowledge_bases",
@@ -169,20 +174,25 @@ def create_app():
              )(recreate_vector_store)
 
     # LLM模型相关接口
-    app.post("/llm_model/list_models",
-            tags=["LLM Model Management"],
-            summary="列出当前已加载的模型",
-            )(list_llm_models)
+    app.post("/llm_model/list_running_models",
+             tags=["LLM Model Management"],
+             summary="列出当前已加载的模型",
+             )(list_running_models)
+
+    app.post("/llm_model/list_config_models",
+             tags=["LLM Model Management"],
+             summary="列出configs已配置的模型",
+             )(list_config_models)
 
     app.post("/llm_model/stop",
-            tags=["LLM Model Management"],
-            summary="停止指定的LLM模型（Model Worker)",
-            )(stop_llm_model)
+             tags=["LLM Model Management"],
+             summary="停止指定的LLM模型（Model Worker)",
+             )(stop_llm_model)
 
     app.post("/llm_model/change",
-            tags=["LLM Model Management"],
-            summary="切换指定的LLM模型（Model Worker)",
-            )(change_llm_model)
+             tags=["LLM Model Management"],
+             summary="切换指定的LLM模型（Model Worker)",
+             )(change_llm_model)
 
     return app
 

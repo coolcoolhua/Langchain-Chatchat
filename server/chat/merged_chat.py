@@ -1,9 +1,9 @@
 from fastapi import Body, Request
 from fastapi.responses import StreamingResponse,JSONResponse
-from configs.model_config import (llm_model_dict, LLM_MODEL, PROMPT_TEMPLATE,
-                                  VECTOR_SEARCH_TOP_K, SCORE_THRESHOLD,
-                                  MERGED_MAX_DOCS_NUM)
-from server.chat.utils import wrap_done
+from configs.model_config import ( LLM_MODEL)
+from configs.kb_config import SCORE_THRESHOLD, VECTOR_SEARCH_TOP_K,  MERGED_MAX_DOCS_NUM, BING_SEARCH_URL, BING_SUBSCRIPTION_KEY
+
+from server.utils import wrap_done
 from server.utils import BaseResponse
 from langchain.chat_models import ChatOpenAI
 from langchain import LLMChain
@@ -20,7 +20,6 @@ from server.knowledge_base.kb_doc_api import search_docs
 import time
 
 from webui_pages.utils import *
-from configs.model_config import BING_SEARCH_URL, BING_SUBSCRIPTION_KEY
 from langchain.utilities import BingSearchAPIWrapper
 from langchain.docstore.document import Document
 
@@ -374,6 +373,9 @@ def merged_chat(query: str = Body(..., description="用户输入", examples=["�
             for d in api.chat_judge(chat_prompt, history=final_history):
                 text += d
             source_document = ""
+            t4 = time.time()
+            print('模型生成耗时为：', round(t4 - t3, 2), 's','答案长度',len(text),'生成速度',len(text)/round(t4 - t3, 2),'token/s', '总共时间', round(t4-t0, 2), 's')
+
         else:
             if question_type == '事实':
                 used_template = truth_template
