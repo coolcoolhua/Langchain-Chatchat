@@ -12,8 +12,26 @@ from server.chat.utils import History
 from langchain.schema import BaseOutputParser
 import re
 from server.utils import get_prompt_template
+from langchain.output_parsers import ListOutputParser
 
-stops = ['波多野结衣','生涯']
+
+stops = [t.strip() for t in open('./server/chat/badwords.txt').readlines()]
+
+
+class CleanupOutputParser(BaseOutputParser):
+    def parse(self, text: str) -> str:
+        for t in stops:
+            if t in text:
+                print(t)
+                text = re.sub(t, "########", text)
+        print(text)
+        return text
+
+    @property
+    def _type(self) -> str:
+        return "output_parser"
+    
+parser = CleanupOutputParser()
 
 async def chat_stop(query: str = Body(..., description="用户输入", examples=["恼羞成怒"]),
                 history: List[History] = Body([],
@@ -22,7 +40,7 @@ async def chat_stop(query: str = Body(..., description="用户输入", examples=
                                            {"role": "user", "content": "我们来玩成语接龙，我先来，生龙活虎"},
                                            {"role": "assistant", "content": "虎头虎脑"}]]
                                        ),
-                stream: bool = Body(False, description="流式输出"),
+                stream: bool = Body(True, description="流式输出"),
                 model_name: str = Body(LLM_MODEL, description="LLM 模型名称。"),
                 temperature: float = Body(TEMPERATURE, description="LLM 采样温度", ge=0.0, le=1.0),
                 # top_p: float = Body(TOP_P, description="LLM 核采样。勿与temperature同时设置", gt=0.0, lt=1.0),
@@ -48,23 +66,23 @@ async def chat_stop(query: str = Body(..., description="用户输入", examples=
         input_msg = History(role="user", content=prompt_template).to_msg_template(False)
         chat_prompt = ChatPromptTemplate.from_messages(
             [i.to_msg_template() for i in history] + [input_msg])
-        chain = LLMChain(prompt=chat_prompt, llm=model)
+        chain = LLMChain(prompt=chat_prompt, llm=model, output_parser = parser)
 
         # Begin a task that runs in the background.
         task = asyncio.create_task(wrap_done(
-            chain.acall({"input": query}),
+            chain.acall({"input": query, "stop": stops}),
             callback.done),
         )
 
         if stream:
             async for token in callback.aiter():
                 # Use server-sent-events to stream the response
-                yield token
+                yield  parser.parse(token)
         else:
             answer = ""
             async for token in callback.aiter():
                 answer += token
-            yield answer
+            yield parser.parse(answer)
 
         await task
 

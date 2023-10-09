@@ -13,3 +13,4 @@ from .bert_truth_judge import bert_truth_judge
 from .bert_relevance_judge import bert_relevance_judge
 from .agent_chat import agent_chat
 from .chat_stop import chat_stop
+from .career_flow_chat import career_flow_chat
