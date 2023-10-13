@@ -1,7 +1,7 @@
 from __future__ import annotations
 from fastapi import Body, Request
 from fastapi.responses import StreamingResponse, JSONResponse
-from configs.model_config import LLM_MODEL
+from configs.model_config import LLM_MODEL, TEMPERATURE
 from configs.kb_config import (
     SCORE_THRESHOLD,
     VECTOR_SEARCH_TOP_K,
@@ -60,17 +60,22 @@ class AsyncIteratorCallbackHandler(AsyncCallbackHandler):
         self.queue = asyncio.Queue()
         self.done = asyncio.Event()
         self.llm_status = 0
+        self.generate_length  = 0
+        self.t0 = time.time()
+        self.t1 = ''
 
     async def on_llm_start(
         self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
     ) -> None:
         # If two calls are made in a row, this resets the state
         print("llm start")
+        self.generate_length = 0
         self.done.clear()
 
     async def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
-        print("生成token",token)
+        # print("生成token",token)
         if token is not None and token != "" and token not in bad_words:
+            self.generate_length += len(token)
             self.queue.put_nowait(token)
         else:
             if len(token) > 0 and token in bad_words:
@@ -80,6 +85,8 @@ class AsyncIteratorCallbackHandler(AsyncCallbackHandler):
 
     async def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
         self.done.set()
+        self.t1 = time.time()
+        print('大模型共生成：', self.generate_length , 'token','，花费时间', round(self.t1 - self.t0, 2), 's', '生成速度',self.generate_length/(self.t1 - self.t0),'token/s')
         print("llm finished")
 
     async def on_llm_error(self, error: BaseException, **kwargs: Any) -> None:
@@ -124,7 +131,7 @@ class CleanupOutputParser(BaseOutputParser):
             if t in text:
                 print(t)
                 # text = re.sub(t, "########", text)
-        print(text)
+        # print(text)
         return text
 
     @property
@@ -147,19 +154,22 @@ role_definition = """
 用亲切的语气回答，回答尽量详细。
 不要出现“指令”，“已知信息”等内容。
 不要描述自己的语言风格等内容。
+注意：
+已知信息里出现的内容都是第三方资料，不是当前学生的资料。
 """
 
 
-truth_template = """<角色>你是一个高中生涯教育老师，你主要回答心理学方面的问题。</角色>
+truth_template = """<角色>你是一个高中生涯教育老师，不允许说自己是大语言模型/角色>
 <指令>优先从已知信息提取答案。
 如果无法从中得到答案，忽略已知内容，根据回答历史和上下文，直接回答问题。
 回答尽量详细，不要出现“角色”，“指令”，“已知信息”内的内容。</指令>
 <历史信息>{{ history }}</历史信息>
 <已知信息>{{ context }}</已知信息>
-<问题>{{ question }}</问题>                 
+<问题>{{ question }}</问题>      
+注意：已知信息的内容里的内容不是当前咨询者的信息，是第三方资料。           
 """
 
-opinion_template = """<角色>你是一个高中生涯教育老师</角色>
+opinion_template = """<角色>你是一个高中生涯教育老师，不允许说自己是大语言模型</角色>
 <指令>优先从已知信息提取答案。
 回答尽量详细，要以客观中立的态度，在回答中以“正面”和”反面“两个方面进行回答，最后附上总结。
 如果无法从中得到答案，忽略已知内容，根据回答历史和上下文，直接回答问题。
@@ -167,9 +177,10 @@ opinion_template = """<角色>你是一个高中生涯教育老师</角色>
 <历史信息>{{ history }}</历史信息>
 <已知信息>{{ context }}</已知信息>
 <问题>{{ question }}</问题>
+注意：已知信息的内容里的内容不是当前咨询者的信息，是第三方资料。
 """
 
-chat_template = """<角色>你是一个高中生涯教育老师，可以为学生提供各个学科，专业方向的指导</角色>
+chat_template = """<角色>你是一个高中生涯教育老师，可以为学生提供各个学科，专业方向的指导。不允许说自己是大语言模型</角色>
 <限制>只能说自己是个高中生涯教育老师。不要描述自己。如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答</限制>
 <问题>{}</问题>
 """
@@ -270,10 +281,9 @@ def docs_merge_strategy(kb_docs, search_engine_docs, knowledge_base_name, reques
     if len(kb_docs) == 0:
         final_docs = search_engine_docs
         source_documents = [
-            f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n""".replace(
+            f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n搜索标题 {doc.metadata["filename"].replace('<b>','').replace('</b>','')}""".replace(
                 "@@@@@@@@@@", ""
             )
-            + "\n----\n"
             for inum, doc in enumerate(search_engine_docs)
         ]
     else:
@@ -288,7 +298,7 @@ def docs_merge_strategy(kb_docs, search_engine_docs, knowledge_base_name, reques
                 f"""##### 知识库出处 [{inum + 1}] [{filename.replace('.txt','')}] \n\n匹配分数{str(1-doc.score)[:5]} \n\n{doc.page_content}\n\n""".replace(
                     "@@@@@@@@@@", ""
                 )
-                + "\n----\n"
+                
             )
             source_documents.append(text)
         if len(kb_docs) < MERGED_MAX_DOCS_NUM:
@@ -297,10 +307,10 @@ def docs_merge_strategy(kb_docs, search_engine_docs, knowledge_base_name, reques
             final_docs.extend(search_engine_docs)
             source_documents.extend(
                 [
-                    f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n""".replace(
+                    f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n搜索标题 {doc.metadata["filename"].replace('<b>','').replace('</b>','')}""".replace(
                         "@@@@@@@@@@", ""
                     )
-                    + "\n----\n"
+                    
                     for inum, doc in enumerate(search_engine_docs)
                 ]
             )
@@ -457,7 +467,8 @@ def career_flow_chat(
         final_docs.reverse()
 
         # 模型最终看到的上下文
-        context = "\n".join([doc.page_content for doc in final_docs]).replace(
+        divide_length =  int(4096/MERGED_MAX_DOCS_NUM)
+        context = "\n".join([doc.page_content[:divide_length] for doc in final_docs]).replace(
             "@@@@@@@@@@\n", ""
         )
         
@@ -488,6 +499,7 @@ def career_flow_chat(
         query: str, history: Optional[List[History]], model_name: str = LLM_MODEL
     ) -> AsyncIterable[str]:
         callback = AsyncIteratorCallbackHandler()
+        print("使用模型",model_name,"模型温度",TEMPERATURE)
         model = get_ChatOpenAI(
             model_name=model_name,
             temperature=TEMPERATURE,

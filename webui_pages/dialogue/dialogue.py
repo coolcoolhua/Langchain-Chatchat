@@ -8,6 +8,10 @@ from configs import (LLM_MODEL, MERGED_MAX_DOCS_NUM, TEMPERATURE)
 
 from server.utils import get_model_worker_config
 from typing import List, Dict
+import pypinyin
+
+def to_pinyin_key(s):  
+   return pypinyin.pinyin(s[0])[0]
 
 chat_box = ChatBox(
     assistant_avatar=os.path.join("img", "chatchat_icon_blue_square_v2.png")
@@ -97,7 +101,7 @@ def dialogue_page(api: ApiRequest):
 
         dialogue_mode = st.selectbox(
             "请选择对话模式",
-            ["融合问答", "搜索引擎问答", "LLM 对话", "知识库问答"],
+            ["流式问答","融合问答", "搜索引擎问答", "LLM 对话", "知识库问答"],
             on_change=on_mode_change,
             key="dialogue_mode",
         )
@@ -130,30 +134,30 @@ def dialogue_page(api: ApiRequest):
                 f.write(prompt + "\n\n\n")
                 st.toast("prompt保存成功")
 
-        judge_template_save = st.text_area(
-            "判断问题类型 使用的prompt是", judge_template, height=200
-        )
-        if st.button("这个prompt很棒，保存一下", key="judge", use_container_width=True):
-            save_prompt(judge_template_save, "判断")
-        opinion_truth_judge_template_save = st.text_area(
-            "判断问题类型 使用的prompt是", opinion_truth_judge_template, height=200
-        )
-        if st.button("这个prompt很棒，保存一下", key="truth_opinion_judge", use_container_width=True):
-            save_prompt(opinion_truth_judge_template, "判断")
+        # judge_template_save = st.text_area(
+        #     "判断问题类型 使用的prompt是", judge_template, height=200
+        # )
+        # if st.button("这个prompt很棒，保存一下", key="judge", use_container_width=True):
+        #     save_prompt(judge_template_save, "判断")
+        # opinion_truth_judge_template_save = st.text_area(
+        #     "判断问题类型 使用的prompt是", opinion_truth_judge_template, height=200
+        # )
+        # if st.button("这个prompt很棒，保存一下", key="truth_opinion_judge", use_container_width=True):
+        #     save_prompt(opinion_truth_judge_template, "判断")
 
-        chat_template_save = st.text_area("闲聊问题 使用的prompt是", chat_template, height=200)
-        if st.button("这个prompt很棒，保存一下", key="chat", use_container_width=True):
-            save_prompt(judge_template_save, "闲聊")
-        truth_template_save = st.text_area(
-            "事实问题 使用的prompt是", truth_template, height=200
-        )
-        if st.button("这个prompt很棒，保存一下", key="truth", use_container_width=True):
-            save_prompt(truth_template_save, "事实")
-        opinion_template_save = st.text_area(
-            "观点问题 使用的prompt是", opinion_template, height=200
-        )
-        if st.button("这个prompt很棒，保存一下", key="opinion", use_container_width=True):
-            save_prompt(opinion_template_save, "观点")
+        # chat_template_save = st.text_area("闲聊问题 使用的prompt是", chat_template, height=200)
+        # if st.button("这个prompt很棒，保存一下", key="chat", use_container_width=True):
+        #     save_prompt(judge_template_save, "闲聊")
+        # truth_template_save = st.text_area(
+        #     "事实问题 使用的prompt是", truth_template, height=200
+        # )
+        # if st.button("这个prompt很棒，保存一下", key="truth", use_container_width=True):
+        #     save_prompt(truth_template_save, "事实")
+        # opinion_template_save = st.text_area(
+        #     "观点问题 使用的prompt是", opinion_template, height=200
+        # )
+        # if st.button("这个prompt很棒，保存一下", key="opinion", use_container_width=True):
+        #     save_prompt(opinion_template_save, "观点")
 
         running_models = api.list_running_models()
         available_models = []
@@ -260,6 +264,21 @@ def dialogue_page(api: ApiRequest):
                 score_threshold = st.number_input(
                     "知识匹配分数阈值：", 0.0, 1.0, float(SCORE_THRESHOLD), 0.01
                 )
+                
+        elif dialogue_mode == "流式问答":
+            with st.expander("知识库配置", True):
+                kb_list = api.list_knowledge_bases(no_remote_api=True)
+                new_kb_list = sorted(kb_list,key=to_pinyin_key)
+                selected_kb = st.selectbox(
+                    "请选择知识库：",
+                    new_kb_list,
+                    on_change=on_kb_change,
+                    key="selected_kb",
+                )
+                kb_top_k = st.number_input("匹配知识条数：", 1, 20, MERGED_MAX_DOCS_NUM)
+                score_threshold = st.number_input(
+                    "知识匹配分数阈值：", 0.0, 1.0, float(SCORE_THRESHOLD), 0.01
+                )
 
     # Display chat messages from history on app rerun
 
@@ -341,6 +360,25 @@ def dialogue_page(api: ApiRequest):
                                             history=history,
                                             model=llm_model,
                                             temperature=temperature):
+                if error_msg := check_error_msg(d):  # check whether error occured
+                    st.error(error_msg)
+                elif chunk := d.get("answer"):
+                    text += chunk
+                    chat_box.update_msg(text, element_index=0)
+            chat_box.update_msg(text, element_index=0, streaming=False)
+            chat_box.update_msg("\n\n".join(d.get("docs", [])), element_index=1, streaming=False)
+        elif dialogue_mode == "流式问答":
+            chat_box.ai_say([
+                f"正在查询知识库 `{selected_kb}` ...",
+                Markdown("...", in_expander=True, title="知识库匹配结果", state="complete"),
+            ])
+            text = ""
+            for d in api.career_flow_chat(prompt,
+                                          selected_kb,
+                                          kb_top_k,
+                                            score_threshold,
+                                            history=history
+                                            ):
                 if error_msg := check_error_msg(d):  # check whether error occured
                     st.error(error_msg)
                 elif chunk := d.get("answer"):

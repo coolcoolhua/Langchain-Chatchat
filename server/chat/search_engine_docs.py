@@ -82,13 +82,13 @@ def search_engine_docs(query: str = Body(..., description="用户输入", exampl
     docs = lookup_search_engine(query, search_engine_name, top_k)
     context = "\n".join([doc.page_content for doc in docs])
     source_documents = [
-            f"""出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n"""
+            f"""出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n标题 {doc.metadata["filename"]}"""
             for inum, doc in enumerate(docs)
         ]
     urls = [ doc.metadata["source"]
         for inum, doc in enumerate(docs)
     ]
-    
+    print(docs)
     res = json.dumps({
                               "docs": source_documents,
                               "context": context,

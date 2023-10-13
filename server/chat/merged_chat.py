@@ -182,7 +182,7 @@ def docs_merge_strategy(kb_docs, search_engine_docs, knowledge_base_name, reques
     if len(kb_docs) ==0:
         final_docs = search_engine_docs
         source_documents = [
-            f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n""".replace('@@@@@@@@@@','') + '\n----\n'
+            f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n搜索标题 {doc.metadata["filename"].replace('<b>','').replace('</b>','')}""".replace('@@@@@@@@@@','') 
             for inum, doc in enumerate(search_engine_docs)
         ]
     else:
@@ -191,14 +191,14 @@ def docs_merge_strategy(kb_docs, search_engine_docs, knowledge_base_name, reques
             filename = os.path.split(doc.metadata["source"])[-1]
             parameters = urlencode({"knowledge_base_name": knowledge_base_name, "file_name":filename})
             url = f"{request.base_url}knowledge_base/download_doc?" + parameters
-            text = f"""##### 知识库出处 [{inum + 1}] [{filename.replace('.txt','')}] \n\n匹配分数{str(1-doc.score)[:5]} \n\n{doc.page_content}\n\n""".replace('@@@@@@@@@@','') + '\n----\n'
+            text = f"""##### 知识库出处 [{inum + 1}] [{filename.replace('.txt','')}] \n\n匹配分数{str(1-doc.score)[:5]} \n\n{doc.page_content}\n\n""".replace('@@@@@@@@@@','') 
             source_documents.append(text)
         if len(kb_docs) < MERGED_MAX_DOCS_NUM:
             supplement_num = MERGED_MAX_DOCS_NUM - len(kb_docs)
             search_engine_docs = search_engine_docs[:supplement_num]
             final_docs.extend(search_engine_docs)
             source_documents.extend([
-                f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n""".replace('@@@@@@@@@@','') + '\n----\n'
+                f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n搜索标题 {doc.metadata["filename"].replace('<b>','').replace('</b>','')}""".replace('@@@@@@@@@@','') 
                 for inum, doc in enumerate(search_engine_docs)
             ])
     return final_docs, source_documents

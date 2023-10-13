@@ -200,20 +200,25 @@ def make_text_splitter(
     根据参数获取特定的分词器
     """
     splitter_name = splitter_name or "SpacyTextSplitter"
+    print("进入这里")
     try:
+        print("11")
         if splitter_name == "MarkdownHeaderTextSplitter":  # MarkdownHeaderTextSplitter特殊判定
             headers_to_split_on = text_splitter_dict[splitter_name]['headers_to_split_on']
             text_splitter = langchain.text_splitter.MarkdownHeaderTextSplitter(
                 headers_to_split_on=headers_to_split_on)
         else:
-
+            print("12")
             try:  ## 优先使用用户自定义的text_splitter
+                print("13")
                 text_splitter_module = importlib.import_module('text_splitter')
                 TextSplitter = getattr(text_splitter_module, splitter_name)
             except:  ## 否则使用langchain的text_splitter
+                print("14")
                 print("使用langchain split",splitter_name)
                 text_splitter_module = importlib.import_module('langchain.text_splitter')
                 TextSplitter = getattr(text_splitter_module, splitter_name)
+                text_splitter = TextSplitter( separator = "\n\n@@@@@@@@@@\n\n",chunk_size=chunk_size, chunk_overlap=chunk_overlap)
             # if text_splitter_dict[splitter_name]["source"] == "tiktoken":  ## 从tiktoken加载
             #     try:
             #         text_splitter = TextSplitter.from_tiktoken_encoder(
@@ -268,9 +273,10 @@ def make_text_splitter(
             #     )
     except Exception as e:
         print(e)
+        print("出错了")
         text_splitter_module = importlib.import_module('langchain.text_splitter')
-        TextSplitter = getattr(text_splitter_module, "RecursiveCharacterTextSplitter")
-        text_splitter = TextSplitter(chunk_size=250, chunk_overlap=50)
+        TextSplitter = getattr(text_splitter_module, "CharacterTextSplitter")
+        text_splitter = TextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     return text_splitter
 
 class KnowledgeFile:
@@ -313,10 +319,13 @@ class KnowledgeFile:
         if not docs:
             return []
         if self.ext not in [".csv"]:
+            print("txt文档")
             if text_splitter is None:
+                print(1)
                 text_splitter = make_text_splitter(splitter_name=self.text_splitter_name,  
                                                    chunk_size = 10,
                                                    chunk_overlap= 0,)
+                print("text_splitter",text_splitter)
             if self.text_splitter_name == "MarkdownHeaderTextSplitter":
                 docs = text_splitter.split_text(docs[0].page_content)
                 for doc in docs:
@@ -325,7 +334,7 @@ class KnowledgeFile:
                         doc.metadata["source"] = os.path.basename(self.filepath)
             else:
                 docs = text_splitter.split_documents(docs)
-
+        print("2")
         print(f"文档切分示例：{docs[:5]}")
         if zh_title_enhance:
             docs = func_zh_title_enhance(docs)
