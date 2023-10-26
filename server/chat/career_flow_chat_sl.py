@@ -197,34 +197,29 @@ role_definition = """
 
 
 truth_template = """<指令>
+0、直接说出回答，不要出现<角色>，<指令>的内容。不允许说自己是大语言模型，以生涯老师的角度回答问题。
+1、已知信息的内容里的内容不是当前咨询者的信息，是第三方资料。
 1、优先从已知信息提取答案。如果无法从已知信息中得到答案，直接说自己暂时不知道这个问题的答案
 2、回答尽量详细，不要出现“角色”，“指令”内的内容。</指令>
 <已知信息>{{ context }}</已知信息>
-<学生问题>{{ question }}</学生问题>
-注意：
-0、直接说出回答，不要出现<角色>，<指令>的内容。
-1、已知信息的内容里的内容不是当前咨询者的信息，是第三方资料。     
-2、不允许说自己是大语言模型，以生涯老师的角度回答问题    。
-3、不允许和历史回答一模一样。"""
+<学生问题>{{ question }}</学生问题> 
+"""
 
 opinion_template = """<指令>
-1、优先从已知信息提取答案。如果无法从已知信息中得到答案，直接说自己暂时不知道这个问题的答案。
-2、回答尽量详细，要以客观中立的态度，在回答中以“正面”和”反面“两个方面进行回答，最后附上总结。
-3、不要出现“角色”，“指令”内的内容。如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答</指令>
+0、直接说出回答，不要出现<角色>，<指令>的内容。不允许说自己是大语言模型，以生涯老师的角度回答问题。
+1、已知信息的内容里的内容不是当前咨询者的信息，是第三方资料。
+2、优先从已知信息提取答案。如果无法从已知信息中得到答案，直接说自己暂时不知道这个问题的答案。
+3、回答尽量详细，要以客观中立的态度，在回答中以“正面”和”反面“两个方面进行回答，最后附上总结。
+4、如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答</指令>
 <已知信息>{{ context }}</已知信息>
 <学生问题>{{ question }}</学生问题>
-注意：
-0、直接说出回答，不要出现<角色>，<指令>的内容。
-1、已知信息的内容里的内容不是当前咨询者的信息，是第三方资料。
-2、不允许说自己是大语言模型，以生涯老师的角度回答问题。
-3、不允许和历史回答一模一样。"""
+"""
 
 chat_template = """<角色>你是试界教育的一个高中生涯教育老师，可以为学生提供各个学科，专业方向的指导。不允许说自己是大语言模型</角色>
 <限制>只能说自己是个高中生涯教育老师。不要描述自己。如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答</限制>
 <聊天历史>{{ history }}</聊天历史>
 <学生问题>{{ question }}</学生问题>
 根据聊天历史和自己的知识进行回答，不许说自己是大语言模型，以生涯老师的角度回答问题"""
-
 
 
 def blocked_words_check(query):
@@ -321,23 +316,23 @@ def docs_merge_strategy(kb_docs, search_engine_docs, knowledge_base_name, reques
     source_documents = []
     if len(kb_docs) == 0:
         final_docs = search_engine_docs
-        # source_documents = [
-        #     f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n搜索标题 {doc.metadata["filename"].replace('<b>','').replace('</b>','')}""".replace(
-        #         "@@@@@@@@@@", ""
-        #     )
-        #     for inum, doc in enumerate(search_engine_docs):
-        # ]
+        source_documents = [
+            f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n搜索标题 {doc.metadata["filename"].replace('<b>','').replace('</b>','')}""".replace(
+                "@@@@@@@@@@", ""
+            )
+            for inum, doc in enumerate(search_engine_docs)
+        ]
         
-        for inum, doc in enumerate(search_engine_docs):
-            text = {
-                    "type": "search",
-                    "index_title": "搜索出处" + str([inum + 1]),
-                    "source_title": doc.metadata["filename"].replace('<b>','').replace('</b>',''),
-                    "source_url": doc.metadata["source"],
-                    "content": doc.page_content.replace("@@@@@@@@@@", "")
-                }
+        # for inum, doc in enumerate(search_engine_docs):
+        #     text = {
+        #             "type": "search",
+        #             "index_title": "搜索出处" + str([inum + 1]),
+        #             "source_title": doc.metadata["filename"].replace('<b>','').replace('</b>',''),
+        #             "source_url": doc.metadata["source"],
+        #             "content": doc.page_content.replace("@@@@@@@@@@", "")
+        #         }
             
-            source_documents.append(text)
+        #     source_documents.append(text)
         
     else:
         final_docs.extend(kb_docs)
@@ -347,42 +342,42 @@ def docs_merge_strategy(kb_docs, search_engine_docs, knowledge_base_name, reques
                 {"knowledge_base_name": knowledge_base_name, "file_name": filename}
             )
             url = f"{request.base_url}knowledge_base/download_doc?" + parameters
-            # text = (
-            #     f"""##### 知识库出处 [{inum + 1}] [{filename.replace('.txt','')}] \n\n匹配分数{str(1-doc.score)[:5]} \n\n{doc.page_content}\n\n""".replace(
-            #         "@@@@@@@@@@", ""
-            #     )
+            text = (
+                f"""##### 知识库出处 [{inum + 1}] [{filename.replace('.txt','')}] \n\n匹配分数{str(1-doc.score)[:5]} \n\n{doc.page_content}\n\n""".replace(
+                    "@@@@@@@@@@", ""
+                )
                 
-            # )
-            text = {
-                    "type": "kb",
-                    "index_title": "知识库出处" + str([inum + 1]),
-                    "source_title": filename.replace('.txt',''),
-                    "match_score": str(1-doc.score)[:5],
-                    "content": doc.page_content.replace("@@@@@@@@@@", "")
-            }
+            )
+            # text = {
+            #         "type": "kb",
+            #         "index_title": "知识库出处" + str([inum + 1]),
+            #         "source_title": filename.replace('.txt',''),
+            #         "match_score": str(1-doc.score)[:5],
+            #         "content": doc.page_content.replace("@@@@@@@@@@", "")
+            # }
             source_documents.append(text)
         if len(kb_docs) < MERGED_MAX_DOCS_NUM:
             supplement_num = MERGED_MAX_DOCS_NUM - len(kb_docs)
             search_engine_docs = search_engine_docs[:supplement_num]
             final_docs.extend(search_engine_docs)
-            # source_documents.extend(
-            #     [
-            #         f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n搜索标题 {doc.metadata["filename"].replace('<b>','').replace('</b>','')}""".replace(
-            #             "@@@@@@@@@@", ""
-            #         )
+            source_documents.extend(
+                [
+                    f"""##### 搜索出处 [{inum + 1}] [{doc.metadata["source"]}]({doc.metadata["source"]}) \n\n{doc.page_content}\n\n搜索标题 {doc.metadata["filename"].replace('<b>','').replace('</b>','')}""".replace(
+                        "@@@@@@@@@@", ""
+                    )
                     
-            #         for inum, doc in enumerate(search_engine_docs)
-            #     ]
-            # )
-            for inum, doc in enumerate(search_engine_docs):
-                text = {
-                        "type": "search",
-                        "index_title": "搜索出处" + str([inum + 1]),
-                        "source_title": doc.metadata["filename"].replace('<b>','').replace('</b>',''),
-                        "source_url": doc.metadata["source"],
-                        "content": doc.page_content.replace("@@@@@@@@@@", "")
-                    }
-                source_documents.append(text)
+                    for inum, doc in enumerate(search_engine_docs)
+                ]
+            )
+            # for inum, doc in enumerate(search_engine_docs):
+            #     text = {
+            #             "type": "search",
+            #             "index_title": "搜索出处" + str([inum + 1]),
+            #             "source_title": doc.metadata["filename"].replace('<b>','').replace('</b>',''),
+            #             "source_url": doc.metadata["source"],
+            #             "content": doc.page_content.replace("@@@@@@@@@@", "")
+            #         }
+            #     source_documents.append(text)
     return final_docs, source_documents
 
 
@@ -425,7 +420,7 @@ def kb_name_check(query,kb_name):
     
 
 
-def career_flow_chat(
+def career_flow_chat_sl(
     query: str = Body(..., description="用户输入", examples=["你好"]),
     knowledge_base_name: str = Body(..., description="知识库名称", examples=["samples"]),
     top_k: int = Body(MERGED_MAX_DOCS_NUM, description="最大匹配向量数"),
@@ -488,7 +483,6 @@ def career_flow_chat(
 
     if prefix_history[0] not in final_history:
         final_history = prefix_history + final_history
-        
 
     # step1 判断是哪种类型的问题
     judge_text = get_idle_res(query)
@@ -549,18 +543,19 @@ def career_flow_chat(
         final_docs.reverse()
 
         # 模型最终看到的上下文
-        max_single_content_length = 800
-        context = "\n".join([doc.page_content[:max_single_content_length] for doc in final_docs]).replace(
+        divide_length =  int(4096/MERGED_MAX_DOCS_NUM)
+        context = "\n".join([doc.page_content[:divide_length] for doc in final_docs]).replace(
             "@@@@@@@@@@\n", ""
         )
         
+                
         print("未裁剪前context",len(context))
         
         # 如果context长度过长，只取前4096，因为是baichuan的限制
-        # if len(context)>=4096:
-        #     context = context[:4096]
+        if len(context)>=4096:
+            context = context[:4096]
         
-        # print("最终context",context)
+        print("最终context",len(context))
 
     t3 = time.time()
     if len(searchengine_docs) > 0:
@@ -573,8 +568,9 @@ def career_flow_chat(
         used_template = chat_template
         context = ""
         source_documents = ""
-        # 只有闲聊才允许看历史记录
+        # 闲聊允许看上下文，事实型不允许
         history = [History.from_data(h) for h in final_history]
+       
     else:
         history = []
         if question_type == "事实":
@@ -617,12 +613,15 @@ def career_flow_chat(
         if stream:
             async for token in callback.aiter():
                 # Use server-sent-events to stream the response
-                yield 'event:' + str(callback.llm_is_generating) + '\n'
-                yield 'data: '+json.dumps({"answer": parser.parse(token), "force_stop_signal": callback.llm_status}, ensure_ascii=False)+'\n\n'
-                # yield json.dumps({"answer": enforce_stop_tokens(token,bad_words)}, ensure_ascii=False)
-            yield 'event:' + str(callback.llm_is_generating) + '\n'
-            suggest_list = random_select_3(major2ques[knowledge_base_name],query)
-            yield 'data: ' + json.dumps({"docs": source_documents, "recommend": suggest_list}, ensure_ascii=False) + '\n\n'
+                # yield 'event:' + str(callback.llm_is_generating) + '\n'
+                # yield 'data: '+json.dumps({"answer": parser.parse(token), "force_stop_signal": callback.llm_status}, ensure_ascii=False)+'\n\n'
+                yield json.dumps({"answer": enforce_stop_tokens(token,bad_words)}, ensure_ascii=False)
+            # yield 'event:' + str(callback.llm_is_generating) + '\n'
+            # suggest_list = random_select_3(major2ques[knowledge_base_name],query)
+            # yield 'data: ' + json.dumps({"docs": source_documents}, ensure_ascii=False) + '\n\n'
+            yield json.dumps(
+                {"docs": source_documents, }, ensure_ascii=False
+            )
         else:
             answer = ""
             async for token in callback.aiter():

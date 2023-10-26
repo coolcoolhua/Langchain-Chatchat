@@ -373,12 +373,14 @@ def dialogue_page(api: ApiRequest):
                 Markdown("...", in_expander=True, title="知识库匹配结果", state="complete"),
             ])
             text = ""
-            for d in api.career_flow_chat(prompt,
+
+            for d in api.career_flow_chat_sl(prompt,
                                           selected_kb,
                                           kb_top_k,
                                             score_threshold,
                                             history=history
                                             ):
+                print(type(d),d)
                 if error_msg := check_error_msg(d):  # check whether error occured
                     st.error(error_msg)
                 elif chunk := d.get("answer"):

@@ -105,7 +105,7 @@ class AsyncIteratorCallbackHandler(AsyncCallbackHandler):
         self.done.clear()
 
     async def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
-        print("生成token",token)
+        # print("生成token",token)
         stop_signal = token_check(token)
         if token is not None and token != "" and (not stop_signal):
             self.generate_length += len(token)
@@ -181,7 +181,7 @@ parser = CleanupOutputParser()
 
 role_definition = """
 角色：
-试界教育的一名高中生涯辅导老师，为高中生做生涯探索辅导。可以为学生提供各个学科，专业方向的指导。
+「试界教育」公司的一名高中生涯辅导老师，为高中生做生涯探索辅导。可以为学生提供各个学科，专业方向的指导。
 背景：
 中国的高中生们普遍缺乏对于职业生涯发展的探索。你作为知名的生涯辅导老师，有义务和能力改变他们的认知，让他们以轻松，非常深入浅出的方式获取各种职业学科的相关知识。
 目标：
@@ -197,18 +197,18 @@ role_definition = """
 
 
 truth_template = """<指令>
-1、优先从已知信息提取答案。如果无法从已知信息中得到答案，直接说自己暂时不知道这个问题的答案
+1、优先从已知信息提取答案。
 2、回答尽量详细，不要出现“角色”，“指令”内的内容。</指令>
 <已知信息>{{ context }}</已知信息>
 <学生问题>{{ question }}</学生问题>
 注意：
 0、直接说出回答，不要出现<角色>，<指令>的内容。
 1、已知信息的内容里的内容不是当前咨询者的信息，是第三方资料。     
-2、不允许说自己是大语言模型，以生涯老师的角度回答问题    。
-3、不允许和历史回答一模一样。"""
+2、不允许说自己是大语言模型，以生涯老师的角度回答问题    
+3、如果无法从已知信息中得到答案，忽略已知内容，根据回答历史和上下文，直接回答问题。"""
 
 opinion_template = """<指令>
-1、优先从已知信息提取答案。如果无法从已知信息中得到答案，直接说自己暂时不知道这个问题的答案。
+1、优先从已知信息提取答案。
 2、回答尽量详细，要以客观中立的态度，在回答中以“正面”和”反面“两个方面进行回答，最后附上总结。
 3、不要出现“角色”，“指令”内的内容。如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答</指令>
 <已知信息>{{ context }}</已知信息>
@@ -216,15 +216,14 @@ opinion_template = """<指令>
 注意：
 0、直接说出回答，不要出现<角色>，<指令>的内容。
 1、已知信息的内容里的内容不是当前咨询者的信息，是第三方资料。
-2、不允许说自己是大语言模型，以生涯老师的角度回答问题。
-3、不允许和历史回答一模一样。"""
+2、不允许说自己是大语言模型，以生涯老师的角度回答问题
+3、如果无法从已知信息中得到答案，忽略已知内容，根据回答历史和上下文，直接回答问题。"""
 
-chat_template = """<角色>你是试界教育的一个高中生涯教育老师，可以为学生提供各个学科，专业方向的指导。不允许说自己是大语言模型</角色>
+chat_template = """<角色>你是「试界教育」公司的一个高中生涯教育老师，可以为学生提供各个学科，专业方向的指导。不允许说自己是大语言模型</角色>
 <限制>只能说自己是个高中生涯教育老师。不要描述自己。如果回答的问题需要学生的信息(比如省份，成绩等)，发问让他回答</限制>
 <聊天历史>{{ history }}</聊天历史>
 <学生问题>{{ question }}</学生问题>
 根据聊天历史和自己的知识进行回答，不许说自己是大语言模型，以生涯老师的角度回答问题"""
-
 
 
 def blocked_words_check(query):
@@ -283,7 +282,7 @@ def search_result2docs(search_results):
     docs = []
     for result in search_results:
         doc = Document(
-            page_content=result["snippet"].replace("<b>","").replace("</b>","") if "snippet" in result.keys() else "",
+            page_content=result["snippet"] if "snippet" in result.keys() else "",
             metadata={
                 "source": result["link"] if "link" in result.keys() else "",
                 "filename": result["title"] if "title" in result.keys() else "",
@@ -423,9 +422,16 @@ def kb_name_check(query,kb_name):
     #         return t
     return kb_name
     
+    
+def query_reformat(query,kb_name):
+    res = query
+    if kb_name not in query:
+        res = kb_name + res
+        
+    return res
 
 
-def career_flow_chat(
+def career_flow_chat_merged(
     query: str = Body(..., description="用户输入", examples=["你好"]),
     knowledge_base_name: str = Body(..., description="知识库名称", examples=["samples"]),
     top_k: int = Body(MERGED_MAX_DOCS_NUM, description="最大匹配向量数"),
@@ -458,13 +464,20 @@ def career_flow_chat(
     searchengine_docs = []
     # 最终文档合集
     final_docs = []
+    # 展示用文档markdown
+    source_document = ""
 
     # 返回模版
     ret = {"answer": "暂时无法回答该问题", "docs": "", "question_type": ""}
     
     # 判断query是不是当前的专业
-    knowledge_base_name =  kb_name_check(query, knowledge_base_name)
+    # knowledge_base_name =  kb_name_check(query, knowledge_base_name)
+    knowledge_base_name_ori = knowledge_base_name
+    knowledge_base_name = "合并类"
     print("最终查询的专业是",knowledge_base_name)
+    
+    # 重新格式化query
+    query = query_reformat(query,knowledge_base_name_ori)
 
     # 前处理，如果query里包含就直接结束
     check_res, blocked_word = blocked_words_check(query)
@@ -489,6 +502,7 @@ def career_flow_chat(
     if prefix_history[0] not in final_history:
         final_history = prefix_history + final_history
         
+    history = [History.from_data(h) for h in final_history]
 
     # step1 判断是哪种类型的问题
     judge_text = get_idle_res(query)
@@ -549,16 +563,14 @@ def career_flow_chat(
         final_docs.reverse()
 
         # 模型最终看到的上下文
-        max_single_content_length = 800
-        context = "\n".join([doc.page_content[:max_single_content_length] for doc in final_docs]).replace(
+        divide_length =  int(8192/MERGED_MAX_DOCS_NUM)
+        context = "\n".join([doc.page_content[:divide_length] for doc in final_docs]).replace(
             "@@@@@@@@@@\n", ""
         )
         
-        print("未裁剪前context",len(context))
-        
         # 如果context长度过长，只取前4096，因为是baichuan的限制
-        # if len(context)>=4096:
-        #     context = context[:4096]
+        if len(context)>=4096:
+            context = context[:4096]
         
         # print("最终context",context)
 
@@ -573,10 +585,7 @@ def career_flow_chat(
         used_template = chat_template
         context = ""
         source_documents = ""
-        # 只有闲聊才允许看历史记录
-        history = [History.from_data(h) for h in final_history]
     else:
-        history = []
         if question_type == "事实":
             used_template = truth_template
         else:
@@ -621,7 +630,10 @@ def career_flow_chat(
                 yield 'data: '+json.dumps({"answer": parser.parse(token), "force_stop_signal": callback.llm_status}, ensure_ascii=False)+'\n\n'
                 # yield json.dumps({"answer": enforce_stop_tokens(token,bad_words)}, ensure_ascii=False)
             yield 'event:' + str(callback.llm_is_generating) + '\n'
-            suggest_list = random_select_3(major2ques[knowledge_base_name],query)
+            if knowledge_base_name != '合并类':
+                suggest_list = random_select_3(major2ques[knowledge_base_name_ori],query)
+            else:
+                suggest_list = []
             yield 'data: ' + json.dumps({"docs": source_documents, "recommend": suggest_list}, ensure_ascii=False) + '\n\n'
         else:
             answer = ""

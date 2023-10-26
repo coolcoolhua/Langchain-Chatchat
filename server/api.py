@@ -21,9 +21,12 @@ from server.chat import (chat, knowledge_base_chat, openai_chat,
                          bert_chat_judge,
                          bert_truth_judge,
                          bert_relevance_judge,
+                         bert_sentiment_analysis,
                          search_engine_chat, agent_chat,
                          chat_stop,
-                         career_flow_chat
+                         career_flow_chat,
+                         career_flow_chat_merged,
+                         career_flow_chat_sl
                          )
 from server.knowledge_base.kb_api import list_kbs, create_kb, delete_kb
 from server.knowledge_base.kb_doc_api import (list_files, upload_docs, delete_docs,
@@ -87,6 +90,12 @@ def create_app():
     app.post("/chat/career_flow_chat",
              tags=["Chat"],
              summary="生涯流式问答,包括意图处理，敏感词处理")(career_flow_chat)
+    app.post("/chat/career_flow_chat_merged",
+             tags=["Chat"],
+             summary="生涯流式问答(不划分专业),包括意图处理，敏感词处理")(career_flow_chat_merged)
+    app.post("/chat/career_flow_chat_sl",
+             tags=["Chat"],
+             summary="生涯流式问答(sl版本)")(career_flow_chat_sl)
     
     app.post("/chat/search_engine_docs",
              tags=["Chat"],
@@ -101,6 +110,10 @@ def create_app():
     app.post("/chat/bert_relevance_judge",
              tags=["Chat"],
              summary="bert判断是事实意图还是观点意图")(bert_relevance_judge)
+    
+    app.post("/chat/bert_sentiment_analysis",
+             tags=["Chat"],
+             summary="bert判断是事实意图还是观点意图")(bert_sentiment_analysis)
     
     
     app.post("/chat/kb_safe_chat",

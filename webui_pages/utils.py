@@ -676,6 +676,48 @@ class ApiRequest:
                 stream=True,
             )
             return self._httpx_stream2generator(response, as_json=True)
+        
+        
+    def career_flow_chat_sl(
+        self,
+        query: str,
+        knowledge_base_name: str,
+        top_k: int = VECTOR_SEARCH_TOP_K,
+        score_threshold: float = SCORE_THRESHOLD,
+        history: List[Dict] = [],
+        stream: bool = True,
+        local_doc_url: bool = None,
+        no_remote_api: bool = None,
+    ):
+        '''
+        对应api.py/chat/knowledge_base_chat接口
+        '''
+        if no_remote_api is None:
+            no_remote_api = self.no_remote_api
+        data = {
+            "query": query,
+            "knowledge_base_name": knowledge_base_name,
+            "top_k": top_k,
+            "score_threshold": score_threshold,
+            "history": history,
+            "stream": stream,
+            "local_doc_url": no_remote_api,
+        }
+        
+        # print(f"received input message:")
+        pprint(data)
+
+        if no_remote_api:
+            from server.chat.career_flow_chat_sl import career_flow_chat_sl
+            response = career_flow_chat_sl(**data)
+            return self._fastapi_stream2generator(response, as_json=True)
+        else:
+            response = self.post(
+                "/chat/career_flow_chat_sl",
+                json=data,
+                stream=True,
+            )
+            return self._httpx_stream2generator(response, as_json=True)
     
     
     def unsatisfy_question_chat(
