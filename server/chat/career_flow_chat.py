@@ -94,7 +94,10 @@ class AsyncIteratorCallbackHandler(AsyncCallbackHandler):
         self.llm_is_generating = 0
         self.generate_length  = 0
         self.t0 = time.time()
-        self.t1 = ''
+        self.t1 = time.time()
+        self.t2 = time.time()
+        self.seed = random.randint(0,1000)
+        self.generate_count = 0
 
     async def on_llm_start(
         self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
@@ -105,11 +108,16 @@ class AsyncIteratorCallbackHandler(AsyncCallbackHandler):
         self.done.clear()
 
     async def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
-        print("生成token",token)
+        # print("生成token",token)
+        self.generate_count +=1
+        self.t2 = time.time()
         stop_signal = token_check(token)
         if token is not None and token != "" and (not stop_signal):
             self.generate_length += len(token)
             self.queue.put_nowait(token)
+            if self.generate_count%3== 0:
+                print(self.seed, ' 大模型本次生成', len(token) , 'token','，花费时间', round(self.t2 - self.t1, 2), 's', '瞬时速度', round(len(token)/(self.t2 - self.t1),2),'token/s, 总共生成', self.generate_length, 'tokens' )
+            self.t1 = self.t2
         else:
             if len(token) > 0 and stop_signal:
                 self.llm_status = 1
@@ -119,9 +127,9 @@ class AsyncIteratorCallbackHandler(AsyncCallbackHandler):
 
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
         self.llm_is_generating = 1
-        print("模型生成结束",self.llm_is_generating)
+        print(self.seed, "模型生成结束",self.llm_is_generating)
         self.t1 = time.time()
-        print('大模型共生成：', self.generate_length , 'token','，花费时间', round(self.t1 - self.t0, 2), 's', '生成速度',self.generate_length/(self.t1 - self.t0),'token/s')
+        print(self.seed, ' 大模型共生成：', self.generate_length , 'token','，花费时间', round(self.t1 - self.t0, 2), 's', '生成速度',self.generate_length/(self.t1 - self.t0),'token/s')
         print("llm finished")
         self.done.set()
 
