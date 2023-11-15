@@ -477,7 +477,7 @@ def career_flow_chat(
     # 前处理，如果query里包含就直接结束
     check_res, blocked_word = blocked_words_check(query)
     if check_res:
-        ret["answer"] = "该问题无法回答，因为问题中包含屏蔽词: " + blocked_word
+        ret["answer"] = "不好意思，该问题无法回答，因为该问题中包含屏蔽词: " + blocked_word + "，请换一个问题"
         return JSONResponse(ret)
 
     api = ApiRequest(base_url="http://127.0.0.1:7861", no_remote_api=False)

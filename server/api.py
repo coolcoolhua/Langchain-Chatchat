@@ -28,6 +28,8 @@ from server.chat import (chat, knowledge_base_chat, openai_chat,
                          career_flow_chat_merged,
                          career_flow_chat_sl
                          )
+from server.rank_prediction import score_insight_train, score_insight_prediction
+
 from server.knowledge_base.kb_api import list_kbs, create_kb, delete_kb
 from server.knowledge_base.kb_doc_api import (list_files, upload_docs, delete_docs,
                                               update_docs, download_doc, recreate_vector_store,
@@ -132,6 +134,15 @@ def create_app():
     app.post("/chat/agent_chat",
              tags=["Chat"],
              summary="与agent对话")(agent_chat)
+    
+    
+    # Tag: 学业透视
+    app.post("/rank/score_insight_prediction",
+             tags=["Rank"],
+             summary="学业透视预测模块")(score_insight_prediction)
+    app.post("/rank/score_insight_train",
+             tags=["Rank"],
+             summary="学业透视新沂版挎包模块")(score_insight_train)
 
     # Tag: Knowledge Base Management
     app.get("/knowledge_base/list_knowledge_bases",
@@ -227,8 +238,8 @@ def run_api(host, port, **kwargs):
                     )
     else:
         # uvicorn.run('api:app', host=host, port=port, workers=4 )
-        uvicorn.run('api:app', host=host, port=port, reload= True )
-        # uvicorn.run(app,host=host,port=port)
+        # uvicorn.run('api:app', host=host, port=port, reload= True )
+        uvicorn.run(app,host=host,port=port)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='langchain-ChatGLM',
