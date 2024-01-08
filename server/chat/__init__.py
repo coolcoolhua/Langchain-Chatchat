@@ -5,6 +5,7 @@ from .search_engine_chat import search_engine_chat
 from .kb_safe_chat import kb_safe_chat
 from .merged_chat import merged_chat
 from .context_chat import context_chat
+from .context_chat_tag import context_chat_tag
 from .chat_judge import chat_judge
 from .search_engine_docs import search_engine_docs
 from .unsatisfy_question_chat import unsatisfy_question_chat
@@ -16,4 +17,8 @@ from .chat_stop import chat_stop
 from .career_flow_chat import career_flow_chat
 from .career_flow_chat_merged import career_flow_chat_merged
 from .career_flow_chat_sl import career_flow_chat_sl
-from . bert_sentiment_analysis import bert_sentiment_analysis
+from .bert_sentiment_analysis import bert_sentiment_analysis
+from .get_content_tags import get_content_tags
+from .get_content_tags_stream import get_content_tags_stream
+from .es_add_data import es_add_data
+from .get_recommend_articles import get_recommend_articles

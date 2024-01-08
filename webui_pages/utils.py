@@ -380,7 +380,45 @@ class ApiRequest:
         else:
             response = self.post("/chat/chat_stop", json=data, stream=True)
             return self._httpx_stream2generator(response)
+        
+    def get_content_tags_stream(
+        self,
+        query: str,
+        history: List[Dict] = [],
+        stream: bool = False,
+        model: str = LLM_MODEL,
+        temperature: float = TEMPERATURE,
+        prompt_name: str = "llm_chat",
+        no_remote_api: bool = None,
+        content: str = "内容"
+    ):
+        '''
+        对应api.py/chat/chat接口
+        '''
+        if no_remote_api is None:
+            no_remote_api = self.no_remote_api
 
+        data = {
+            "query": query,
+            "history": history,
+            "stream": stream,
+            "model_name": model,
+            "temperature": temperature,
+            "prompt_name": prompt_name,
+            "content": content
+        }
+
+        # print(f"received input message:")
+        # pprint(data)
+        if no_remote_api:
+            from server.chat.get_content_tags_stream import get_content_tags_stream
+            response = run_async(get_content_tags_stream(**data))
+            return self._fastapi_stream2generator(response)
+        else:
+            response = self.post("/chat/get_content_tags_stream", json=data, stream=True)
+            return self._httpx_stream2generator(response)
+        
+        
     def agent_chat(
             self,
             query: str,

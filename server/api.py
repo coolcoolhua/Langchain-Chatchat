@@ -26,7 +26,12 @@ from server.chat import (chat, knowledge_base_chat, openai_chat,
                          chat_stop,
                          career_flow_chat,
                          career_flow_chat_merged,
-                         career_flow_chat_sl
+                         career_flow_chat_sl,
+                         get_content_tags,
+                         get_content_tags_stream,
+                         es_add_data,
+                         get_recommend_articles,
+                         context_chat_tag
                          )
 from server.rank_prediction import score_insight_train, score_insight_prediction
 
@@ -116,6 +121,23 @@ def create_app():
     app.post("/chat/bert_sentiment_analysis",
              tags=["Chat"],
              summary="bert判断是事实意图还是观点意图")(bert_sentiment_analysis)
+    app.post("/chat/get_content_tags",
+             tags=["Chat"],
+             summary="大模型给内容打标签")(get_content_tags)
+    app.post("/chat/get_content_tags_stream",
+             tags=["Chat"],
+             summary="大模型给内容打标签流")(get_content_tags_stream)
+    app.post("/chat/context_chat_tag",
+             tags=["Chat"],
+             summary="搜索增加后让大模型给内容打标签流")(context_chat_tag)
+    
+    # es相关操作
+    app.post("/chat/es_add_data",
+            tags=["ES"],
+            summary="es数据库新增数据")(es_add_data)
+    app.post("/chat/get_recommend_articles",
+            tags=["ES"],
+            summary="推荐文章")(get_recommend_articles)
     
     
     app.post("/chat/kb_safe_chat",
@@ -238,8 +260,8 @@ def run_api(host, port, **kwargs):
                     )
     else:
         # uvicorn.run('api:app', host=host, port=port, workers=4 )
-        # uvicorn.run('api:app', host=host, port=port, reload= True )
-        uvicorn.run(app,host=host,port=port)
+        uvicorn.run('api:app', host=host, port=port, reload= True )
+        # uvicorn.run(app,host=host,port=port)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='langchain-ChatGLM',

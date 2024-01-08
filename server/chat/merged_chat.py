@@ -322,7 +322,8 @@ def merged_chat(query: str = Body(..., description="用户输入", examples=["�
     
 
     api = ApiRequest(base_url="http://127.0.0.1:7861", no_remote_api=False)
-
+    
+    print("ininininini")
     
     final_history = []
     if len(history)>0:
