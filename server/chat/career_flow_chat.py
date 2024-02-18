@@ -1,7 +1,7 @@
 from fastapi import Body, Request
 from sse_starlette.sse import EventSourceResponse
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from configs import (LLM_MODELS, 
                      VECTOR_SEARCH_TOP_K, 
                      SCORE_THRESHOLD, 
@@ -235,7 +235,10 @@ class AsyncIteratorCallbackHandler(AsyncCallbackHandler):
         self.llm_is_generating = 0
         self.generate_length  = 0
         self.t0 = time.time()
-        self.t1 = ''
+        self.t1 = time.time()
+        self.t2 = time.time()
+        self.seed = random.randint(0,1000)
+        self.generate_count = 0
 
     async def on_llm_start(
         self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
@@ -244,27 +247,32 @@ class AsyncIteratorCallbackHandler(AsyncCallbackHandler):
         print("llm start")
         self.generate_length = 0
         self.done.clear()
+    
+    async def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
+        self.llm_is_generating = 1
+        print(self.seed, "模型生成结束",self.llm_is_generating)
+        self.t1 = time.time()
+        print(self.seed, ' 大模型共生成：', self.generate_length , 'token','，花费时间', round(self.t1 - self.t0, 2), 's', '生成速度',self.generate_length/(self.t1 - self.t0),'token/s')
+        print("llm finished")
+        self.done.set()
 
     async def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
         # print("生成token",token)
+        self.generate_count +=1
+        self.t2 = time.time()
         stop_signal = token_check(token)
         if token is not None and token != "" and (not stop_signal):
             self.generate_length += len(token)
             self.queue.put_nowait(token)
+            if self.generate_count%3== 0:
+                print(self.seed, ' 大模型本次生成', len(token) , 'token','，花费时间', round(self.t2 - self.t1, 2), 's', '瞬时速度', round(len(token)/(self.t2 - self.t1),2),'token/s, 总共生成', self.generate_length, 'tokens' )
+            self.t1 = self.t2
         else:
             if len(token) > 0 and stop_signal:
                 self.llm_status = 1
                 print("存在敏感词",token,"修改llmstatus",self.llm_status)
                 self.queue.put_nowait(token)
                 # self.queue.put_nowait("########")
-
-    def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
-        self.llm_is_generating = 1
-        print("模型生成结束",self.llm_is_generating)
-        self.t1 = time.time()
-        print('大模型共生成：', self.generate_length , 'token','，花费时间', round(self.t1 - self.t0, 2), 's', '生成速度',self.generate_length/(self.t1 - self.t0),'token/s')
-        print("llm finished")
-        self.done.set()
 
 
     async def on_llm_error(self, error: BaseException, **kwargs: Any) -> None:
@@ -338,7 +346,7 @@ async def career_flow_chat(query: str = Body(..., description="用户输入", ex
                                       {"role": "assistant",
                                        "content": "虎头虎脑"}]]
                               ),
-                              stream: bool = Body(False, description="流式输出"),
+                              stream: bool = Body(True, description="流式输出"),
                               model_name: str = Body(LLM_MODELS[0], description="LLM 模型名称。"),
                               temperature: float = Body(TEMPERATURE, description="LLM 采样温度", ge=0.0, le=1.0),
                               max_tokens: Optional[int] = Body(
@@ -469,7 +477,6 @@ async def career_flow_chat(query: str = Body(..., description="用户输入", ex
 
     print("前处理流程结束，共耗时", round(t3 - t0, 2), "s")
 
-    text = ""
     if question_type == "闲聊":
         used_template = chat_template
         context = ""
@@ -509,7 +516,7 @@ async def career_flow_chat(query: str = Body(..., description="用户输入", ex
                                        score_threshold=score_threshold)
 
         # 加入reranker
-        if USE_RERANKER:
+        if USE_RERANKER and question_type!='闲聊':
             reranker_model_path = MODEL_PATH["reranker"].get(RERANKER_MODEL,"BAAI/bge-reranker-large")
             print("-----------------model path------------------")
             print(reranker_model_path)
@@ -524,12 +531,6 @@ async def career_flow_chat(query: str = Body(..., description="用户输入", ex
             print("---------after rerank------------------")
             print(docs)
         context = "\n".join([doc.page_content for doc in docs])
-
-        if len(docs) == 0:  # 如果没有找到相关文档，使用empty模板
-            prompt_template = get_prompt_template("knowledge_base_chat", "empty")
-        else:
-            prompt_template = get_prompt_template("knowledge_base_chat", prompt_name)
-            
         
         input_msg = History(role="user", content=used_template).to_msg_template(False)
         chat_prompt = ChatPromptTemplate.from_messages(
@@ -539,21 +540,9 @@ async def career_flow_chat(query: str = Body(..., description="用户输入", ex
 
         # Begin a task that runs in the background.
         task = asyncio.create_task(wrap_done(
-            chain.acall({"context": context, "question": query}),
+            chain.acall({"context": context, "question": query, "history": history}),
             callback.done),
         )
-
-        # source_documents = []
-        # for inum, doc in enumerate(docs):
-        #     filename = doc.metadata.get("source")
-        #     parameters = urlencode({"knowledge_base_name": knowledge_base_name, "file_name": filename})
-        #     base_url = request.base_url
-        #     url = f"{base_url}knowledge_base/download_doc?" + parameters
-        #     text = f"""出处 [{inum + 1}] [{filename}]({url}) \n\n{doc.page_content}\n\n"""
-        #     source_documents.append(text)
-
-        # if len(source_documents) == 0:  # 没有找到相关文档
-        #     source_documents.append(f"<span style='color:red'>未找到相关文档,该回答为大模型自身能力解答！</span>")
 
         if stream:
             async for token in callback.aiter():
@@ -562,19 +551,22 @@ async def career_flow_chat(query: str = Body(..., description="用户输入", ex
                 yield 'data: '+json.dumps({"answer": parser.parse(token), "force_stop_signal": callback.llm_status}, ensure_ascii=False)+'\n\n'
                 # yield json.dumps({"answer": enforce_stop_tokens(token,bad_words)}, ensure_ascii=False)
             yield 'event:' + str(callback.llm_is_generating) + '\n'
-            if knowledge_base_name != '合并类':
-                suggest_list = random_select_3(major2ques[knowledge_base_name],query)
-            else:
-                suggest_list = []
+            suggest_list = random_select_3(major2ques[knowledge_base_name],query)
             yield 'data: ' + json.dumps({"docs": source_documents, "recommend": suggest_list}, ensure_ascii=False) + '\n\n'
         else:
             answer = ""
             async for token in callback.aiter():
-                answer += token
-            yield json.dumps({"answer": answer,
-                              "docs": source_documents},
-                             ensure_ascii=False)
+                answer += parser.parse(token)
+                # answer += enforce_stop_tokens(token,bad_words)
+            yield json.dumps(
+                {"answer": answer, "docs": source_documents, }, ensure_ascii=False
+            )
+
         await task
 
-    return EventSourceResponse(knowledge_base_chat_iterator(query, top_k, history,model_name,prompt_name))
-
+    return StreamingResponse(
+        knowledge_base_chat_iterator(
+            query=query, top_k=top_k, history=history, model_name=LLM_MODELS[0]
+        ),
+        media_type="text/event-stream",
+    )

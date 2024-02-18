@@ -300,6 +300,7 @@ def run_api(host, port, **kwargs):
                     )
     else:
         uvicorn.run(app, host=host, port=port)
+        #uvicorn.run("api:app",host=host,port=port,reload=True)
 
 
 if __name__ == "__main__":

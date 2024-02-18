@@ -177,7 +177,7 @@ def create_model_worker_app(log_level: str = "INFO", **kwargs) -> FastAPI:
             args.max_gpu_memory = "30GiB"
             args.num_gpus = 1  # model worker的切分是model并行，这里填写显卡的数量
 
-            args.load_8bit = False
+            args.load_8bit = True
             args.cpu_offloading = None
             args.gptq_ckpt = None
             args.gptq_wbits = 16
