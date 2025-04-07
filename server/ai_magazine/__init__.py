@@ -1,3 +1,5 @@
 from .get_content_tags_stream import get_content_tags_stream
 from .es_add_data import es_add_data
 from .get_recommend_articles import get_recommend_articles
+from .get_lark_tag_major import get_lark_tag_major
+from .get_lark_tag_school import get_lark_tag_school

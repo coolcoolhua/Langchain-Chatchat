@@ -54,9 +54,17 @@ def get_ChatOpenAI(
         **kwargs: Any,
 ) -> ChatOpenAI:
     config = get_model_worker_config(model_name)
-    if model_name == "openai-api":
+    if "openai-api" in model_name:
+        print("找到模型",model_name)
         model_name = config.get("model_name")
     ChatOpenAI._get_encoding_model = MinxChatOpenAI.get_encoding_model
+    print("检查")
+    print(streaming)
+    print(verbose)
+    print(callbacks)
+    print(config.get("api_key", "EMPTY"))
+    print(config.get("api_base_url", fschat_openai_api_address()))
+    print(model_name)
     model = ChatOpenAI(
         streaming=streaming,
         verbose=verbose,

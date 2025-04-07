@@ -23,7 +23,7 @@ VECTOR_SEARCH_TOP_K = 3
 
 # 知识库匹配的距离阈值，一般取值范围在0-1之间，SCORE越小，距离越小从而相关度越高。
 # 但有用户报告遇到过匹配分值超过1的情况，为了兼容性默认设为1，在WEBUI中调整范围为0-2
-SCORE_THRESHOLD = 1.0
+SCORE_THRESHOLD = 0.4
 
 # 默认搜索引擎。可选：bing, duckduckgo, metaphor
 DEFAULT_SEARCH_ENGINE = "duckduckgo"
@@ -31,8 +31,11 @@ DEFAULT_SEARCH_ENGINE = "duckduckgo"
 # 搜索引擎匹配结题数量
 SEARCH_ENGINE_TOP_K = 3
 
-# 融合数量
+# 召回数量
 MERGED_MAX_DOCS_NUM = 5
+
+# 重排后数量
+DOCS_NUM_AFTER_RERANK = 5
 
 # Bing 搜索必备变量
 # 使用 Bing 搜索需要使用 Bing Subscription Key,需要在azure port中申请试用bing search

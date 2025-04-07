@@ -173,7 +173,7 @@ def score_insight_train(
   
 
   # 生成测试数据, 1000个样本
-  X = np.linspace(0, 1, 10001).reshape(-1, 1)
+  X = np.linspace(0, 1, 1001).reshape(-1, 1)
   # 将X按照模型分段预测
   y = []
   for i in range(len(models)):
@@ -258,7 +258,8 @@ def score_insight_train(
   
   
   ret = {
-    "model_res": df.to_dict(orient='records')
+    "model_res": df.to_dict(orient='records'),
+    "split_line": 0.05
   }
   
   return JSONResponse(ret)

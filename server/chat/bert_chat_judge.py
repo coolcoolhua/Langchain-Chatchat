@@ -4,7 +4,7 @@ from transformers import AutoModelForSequenceClassification
 from fastapi.responses import JSONResponse
 from fastapi import Body, Request
 
-model_path = '/home/ubuntu/bertTrain/testoutput/checkpoint-600'
+model_path = '/root/autodl-tmp/bertmodels/testoutput/'
 
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 model = AutoModelForSequenceClassification.from_pretrained(model_path,num_labels=2)
@@ -16,7 +16,7 @@ label_dict = {
 }
 
 def bert_chat_judge(query: str = Body(..., examples=["samples"])):
-  print("query=",query)
+  print("bert query=",query)
   ret = {
     "answer": ""
   }

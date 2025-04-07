@@ -9,13 +9,21 @@ from configs.model_config import NLTK_DATA_PATH
 from configs.server_config import OPEN_CROSS_DOMAIN
 import argparse
 import uvicorn
-from fastapi import Body
+from fastapi import Body,Request
+from fastapi.routing import APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import Response
 from starlette.responses import RedirectResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from server.chat.chat import chat
+from server.chat.chat_career import chat_career
 from server.chat.search_engine_chat import search_engine_chat
 from server.chat.completion import completion
 from server.chat.feedback import chat_feedback
+from server.chat.context_chat_tag import context_chat_tag
+from starlette.datastructures import Headers
+
+
 from server.embeddings_api import embed_texts_endpoint
 from server.llm_api import (list_running_models, list_config_models,
                             change_llm_model, stop_llm_model,
@@ -24,11 +32,60 @@ from server.utils import (BaseResponse, ListResponse, FastAPI, MakeFastAPIOfflin
                           get_server_configs, get_prompt_template)
 from typing import List, Literal
 
+import httpx
+
 nltk.data.path = [NLTK_DATA_PATH] + nltk.data.path
 
 
+# Node.js服务的本地地址和端口
+NODE_SERVICE_URL = "http://localhost:3000"
+
 async def document():
     return RedirectResponse(url="/docs")
+
+
+        
+# 中间件，用于转发请求到Node.js服务
+class ForwardToNodeMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # 检查请求的路径是否需要转发到Node.js服务
+        if 'reports-print' in str(request.url.path):
+            print("转发到node")
+            # 使用httpx异步客户端转发请求到Node.js服务
+            async with httpx.AsyncClient() as client:
+                proxy_url = NODE_SERVICE_URL + request.url.path
+                # 去掉reports-print
+                proxy_url = proxy_url.replace("reports-print","")
+                print("最终使用的url",proxy_url)
+                
+                # 准备请求头，包括cookie
+                headers = dict(request.headers)
+                
+                # 从请求中获取cookie并添加到headers
+                cookie_headers = request.cookies
+                cookie_header = "; ".join([f"{key}={value}" for key, value in cookie_headers.items()])
+                # if cookie_header:
+                    # headers['Cookie'] = cookie_header
+                    
+                headers['user_cookie'] = headers['cookie']
+                print("原来的cookie",request.headers)
+                # print("最终使用的header", headers)
+                # 发送请求到Node.js服务
+                response = await client.request(
+                    method=request.method,
+                    url=proxy_url,
+                    headers=request.headers,
+                    content=await request.body(),
+                    params=request.query_params,
+                )
+            # 返回从Node.js服务收到的响应
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                headers=response.headers,
+            )
+        # 如果请求不需要转发，则继续处理其他FastAPI路由
+        return await call_next(request)
 
 
 def create_app(run_mode: str = None):
@@ -36,6 +93,9 @@ def create_app(run_mode: str = None):
         title="Langchain-Chatchat API Server",
         version=VERSION
     )
+    
+    router = APIRouter(prefix='/python')
+    
     MakeFastAPIOffline(app)
     # Add CORS middleware to allow all origins
     # 在config.py中设置OPEN_DOMAIN=True，允许跨域
@@ -48,7 +108,11 @@ def create_app(run_mode: str = None):
             allow_methods=["*"],
             allow_headers=["*"],
         )
+    # 将中间件添加到FastAPI应用
+    app.add_middleware(ForwardToNodeMiddleware)
     mount_app_routes(app, run_mode=run_mode)
+    # 是否添加/python前缀
+    # app.router = router
     return app
 
 
@@ -62,7 +126,7 @@ def mount_app_routes(app: FastAPI, run_mode: str = None):
              tags=["Chat"],
              summary="与llm模型对话(通过LLMChain)",
              )(chat)
-
+    
     app.post("/chat/search_engine_chat",
              tags=["Chat"],
              summary="与搜索引擎对话",
@@ -141,6 +205,7 @@ def mount_knowledge_routes(app: FastAPI):
     from server.chat.career_flow_chat import career_flow_chat
     from server.chat.bert_chat_judge import bert_chat_judge
     from server.chat.bert_truth_judge import bert_truth_judge
+    from server.chat.guidance_info_retrieve_new1 import guidance_info_retrieve
     from server.chat.file_chat import upload_temp_docs, file_chat
     from server.chat.agent_chat import agent_chat
     from server.knowledge_base.kb_api import list_kbs, create_kb, delete_kb
@@ -152,6 +217,10 @@ def mount_knowledge_routes(app: FastAPI):
     from server.ai_magazine.es_add_data import es_add_data
     from server.ai_magazine.get_content_tags_stream import get_content_tags_stream
     from server.ai_magazine.get_recommend_articles import get_recommend_articles
+    from server.ai_magazine.url2es import url2es
+    from server.hld_major_suggest.hld_major_suggest import hld_major_suggest
+    from server.hld_major_suggest.hld_major_suggest_new import hld_major_suggest_new
+    
 
     app.post("/chat/knowledge_base_chat",
              tags=["Chat"],
@@ -167,6 +236,17 @@ def mount_knowledge_routes(app: FastAPI):
              tags=["Chat"],
              summary="bert判断是事实意图还是观点意图")(bert_truth_judge)
     
+    # 选科指导
+    app.post("/chat/guidance_info_retrieve",
+             tags=["Chat"],
+             summary="选科指导提取信息")(guidance_info_retrieve)
+    
+    app.post("/chat/chat_career",
+             tags=["Chat"],
+             summary="进行选科指导相关的内容提取",
+             )(chat_career)
+
+    
     # 学业目标透视
     app.post("/rank/score_insight_train",
              tags=["Rank"],
@@ -181,9 +261,27 @@ def mount_knowledge_routes(app: FastAPI):
             summary="推荐文章")(get_recommend_articles)
     
     # 个性化指导报告
-    app.post("/chat/get_content_tags_stream",
+    app.post("/chat/get_content_tags",
              tags=["Chat"],
              summary="大模型给内容打标签流")(get_content_tags_stream)
+    
+    app.post("/chat/context_chat_tag",
+             tags=["Chat"],
+             summary="大模型给专业打标签")(context_chat_tag)
+
+    
+    app.post("/chat/url2es",
+             tags=["Chat"],
+             summary="将单独url直接存进es")(url2es)
+    
+    
+    # 霍兰德专业推荐
+    app.post("/chat/hld_major_suggest",
+            tags=["Chat"],
+            summary="霍兰德专业推荐算法")(hld_major_suggest_new)
+    app.post("/chat/hld_major_suggest_new",
+            tags=["Chat"],
+            summary="霍兰德专业推荐算法新版")(hld_major_suggest_new)
     
 
     app.post("/chat/file_chat",
@@ -301,6 +399,10 @@ def run_api(host, port, **kwargs):
     else:
         uvicorn.run(app, host=host, port=port)
         #uvicorn.run("api:app",host=host,port=port,reload=True)
+        
+
+
+
 
 
 if __name__ == "__main__":
@@ -308,7 +410,8 @@ if __name__ == "__main__":
                                      description='About langchain-ChatGLM, local knowledge based ChatGLM with langchain'
                                                  ' ｜ 基于本地知识库的 ChatGLM 问答')
     parser.add_argument("--host", type=str, default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=7861)
+    parser.add_argument("--port", type=int, default=6789)
+    # parser.add_argument("--port", type=int, default=6006)
     parser.add_argument("--ssl_keyfile", type=str)
     parser.add_argument("--ssl_certfile", type=str)
     # 初始化消息

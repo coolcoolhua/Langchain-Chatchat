@@ -6,7 +6,7 @@ import os
 MODEL_ROOT_PATH = ""
 
 # 选用的 Embedding 名称
-EMBEDDING_MODEL = "bge-large-zh-v1.5"
+EMBEDDING_MODEL = "m3e-base"
 
 # Embedding 模型运行设备。设为 "auto" 会自动检测(会有警告)，也可手动设定为 "cuda","mps","cpu","xpu" 其中之一。
 EMBEDDING_DEVICE = "auto"
@@ -26,30 +26,42 @@ EMBEDDING_MODEL_OUTPUT_PATH = "output"
 # 在这里，我们使用目前主流的两个离线模型，其中，chatglm3-6b 为默认加载模型。
 # 如果你的显存不足，可使用 Qwen-1_8B-Chat, 该模型 FP16 仅需 3.8G显存。
 
-LLM_MODELS = ["chatglm3-6b-32k", "zhipu-api", "openai-api"]
+# LLM_MODELS = ['openai-api1','openai-api2']
+LLM_MODELS = ['qwen-api','qwen-api']
+# LLM_MODELS = ['zhipu-api','zhipu-api']
+# LLM_MODELS = ['openai-api1','baichuan2-13b-chat']
+# LLM_MODELS = ['baichuan2-13b-chat']
+# LLM_MODELS = ["Orion-14B-Chat"]
+# LLM_MODELS = ["Qwen-14B-Chat"]
 # LLM_MODELS = ["Yi-34B-Chat"]
 Agent_MODEL = None
 
 # LLM 模型运行设备。设为"auto"会自动检测(会有警告)，也可手动设定为 "cuda","mps","cpu","xpu" 其中之一。
 LLM_DEVICE = "auto"
 
-HISTORY_LEN = 3
+HISTORY_LEN = 10
 
-MAX_TOKENS = 2048
+MAX_TOKENS = 4096
 
-TEMPERATURE = 0.7
+TEMPERATURE = 0
 
 ONLINE_LLM_MODEL = {
-    "openai-api": {
+    "openai-api1": {
         "model_name": "gpt-4",
-        "api_base_url": "https://api.openai.com/v1",
-        "api_key": "",
+        "api_base_url": "https://api.openai-proxy.com/v1",
+        "api_key": "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",
+        "openai_proxy": "",
+    },
+    "openai-api2": {
+        "model_name": "gpt-3.5-turbo",
+        "api_base_url": "https://api.openai-proxy.com/v1",
+        "api_key": "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",
         "openai_proxy": "",
     },
 
     # 智谱AI API,具体注册及api key获取请前往 http://open.bigmodel.cn
     "zhipu-api": {
-        "api_key": "",
+        "api_key": "5726878be0b0536b3a8f4c9af993e43d.F5dPPpsCdKZcQ9ox",
         "version": "glm-4",
         "provider": "ChatGLMWorker",
     },
@@ -92,7 +104,7 @@ ONLINE_LLM_MODEL = {
     # 阿里云通义千问 API，文档参考 https://help.aliyun.com/zh/dashscope/developer-reference/api-details
     "qwen-api": {
         "version": "qwen-max",
-        "api_key": "",
+        "api_key": "sk-dd49b8fd685d462099868df4b758e9ae",
         "provider": "QwenWorker",
         "embed_model": "text-embedding-v1"  # embedding 模型名称
     },
@@ -149,14 +161,14 @@ MODEL_PATH = {
         "text2vec-multilingual": "shibing624/text2vec-base-multilingual",
         "text2vec-bge-large-chinese": "shibing624/text2vec-bge-large-chinese",
         "m3e-small": "moka-ai/m3e-small",
-        "m3e-base": "moka-ai/m3e-base",
+        "m3e-base": "/root/autodl-tmp/model/m3e-base",
         "m3e-large": "moka-ai/m3e-large",
         "bge-small-zh": "BAAI/bge-small-zh",
         "bge-base-zh": "BAAI/bge-base-zh",
-        "bge-large-zh": "BAAI/bge-large-zh",
+        "bge-large-zh": "/root/autodl-tmp/model/bge-large-zh",
         "bge-large-zh-noinstruct": "BAAI/bge-large-zh-noinstruct",
         "bge-base-zh-v1.5": "BAAI/bge-base-zh-v1.5",
-        "bge-large-zh-v1.5": "/home/ubuntu/bge-large-zh-v1.5",
+        "bge-large-zh-v1.5": "/root/autodl-tmp/model/bge-large-zh-v1.5",
         "piccolo-base-zh": "sensenova/piccolo-base-zh",
         "piccolo-large-zh": "sensenova/piccolo-large-zh",
         "nlp_gte_sentence-embedding_chinese-large": "damo/nlp_gte_sentence-embedding_chinese-large",
@@ -164,12 +176,13 @@ MODEL_PATH = {
     },
 
     "llm_model": {
-        "chatglm2-6b": "/home/ubuntu/chatglm2-6b-int4",
+        "chatglm2-6b": "/root/autodl-tmp/model/chatglm2-6b-int4",
         "chatglm2-6b-32k": "THUDM/chatglm2-6b-32k",
-        "chatglm3-6b": "THUDM/chatglm3-6b",
-        "chatglm3-6b-32k": "/home/ubuntu/chatglm3-6b-32k",
+        "chatglm3-6b": "/root/autodl-tmp/model/chatglm3-6b",
+        "chatglm3-6b-32k": "/root/autodl-tmp/model/chatglm3-6b-32k",
 
-        "Orion-14B-Chat": "/home/ubuntu/Orion-14B-Chat-Int4",
+        # "Orion-14B-Chat": "/root/autodl-tmp/OrionStarAI/Orion-14B-Chat",
+        "Orion-14B-Chat": "/root/autodl-tmp/OrionStarAI/Orion-14B-Chat-Int4",
         "Orion-14B-Chat-Plugin": "OrionStarAI/Orion-14B-Chat-Plugin",
         "Orion-14B-LongChat": "OrionStarAI/Orion-14B-LongChat",
 
@@ -179,13 +192,15 @@ MODEL_PATH = {
 
         "Qwen-1_8B-Chat": "Qwen/Qwen-1_8B-Chat",
         "Qwen-7B-Chat": "Qwen/Qwen-7B-Chat",
-        "Qwen-14B-Chat": "Qwen/Qwen-14B-Chat",
+        # "Qwen-14B-Chat": "/root/autodl-tmp/model/qwen/Qwen-14B-Chat-Int4",
+        # "Qwen-14B-Chat": "/root/autodl-tmp/qwen/Qwen-14B-Chat-Int4",
+        "Qwen-14B-Chat": "/root/autodl-tmp/qwen/Qwen15-14B-Chat-GPTQ-Int4",
         "Qwen-72B-Chat": "Qwen/Qwen-72B-Chat",
 
         "baichuan-7b-chat": "baichuan-inc/Baichuan-7B-Chat",
         "baichuan-13b-chat": "baichuan-inc/Baichuan-13B-Chat",
         "baichuan2-7b-chat": "baichuan-inc/Baichuan2-7B-Chat",
-        "baichuan2-13b-chat": "baichuan-inc/Baichuan2-13B-Chat",
+        "baichuan2-13b-chat": "/root/autodl-tmp/model/Baichuan2-13B-Chat-4bits",
 
         "internlm-7b": "internlm/internlm-7b",
         "internlm-chat-7b": "internlm/internlm-chat-7b",
@@ -195,7 +210,7 @@ MODEL_PATH = {
         "BlueLM-7B-Chat": "vivo-ai/BlueLM-7B-Chat",
         "BlueLM-7B-Chat-32k": "vivo-ai/BlueLM-7B-Chat-32k",
 
-        "Yi-34B-Chat": "/home/ubuntu/Yi-34B-Chat-4bits",
+        "Yi-34B-Chat": "/root/autodl-tmp/01ai/Yi-34B-Chat-4bits",
 
         "agentlm-7b": "THUDM/agentlm-7b",
         "agentlm-13b": "THUDM/agentlm-13b",
@@ -227,7 +242,7 @@ MODEL_PATH = {
     },
 
     "reranker": {
-        "bge-reranker-large": "/home/ubuntu/bge-reranker-large",
+        "bge-reranker-large": "/root/autodl-tmp/model/bge-reranker-large",
         "bge-reranker-base": "BAAI/bge-reranker-base",
     }
 }
@@ -241,8 +256,8 @@ NLTK_DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "nltk_
 VLLM_MODEL_DICT = {
     "chatglm2-6b": "THUDM/chatglm2-6b",
     "chatglm2-6b-32k": "THUDM/chatglm2-6b-32k",
-    "chatglm3-6b": "THUDM/chatglm3-6b",
-    "chatglm3-6b-32k": "/home/ubuntu/chatglm3-6b-32k",
+    "chatglm3-6b": "/root/autodl-tmp/model/chatglm3-6b",
+    "chatglm3-6b-32k": "/root/autodl-tmp/model/chatglm3-6b-32k",
 
     "Llama-2-7b-chat-hf": "meta-llama/Llama-2-7b-chat-hf",
     "Llama-2-13b-chat-hf": "meta-llama/Llama-2-13b-chat-hf",

@@ -109,7 +109,7 @@ class QwenWorker(ApiModelWorker):
             system_message="你是一个聪明、对人类有帮助的人工智能，你可以对人类提出的问题给出有用、详细、礼貌的回答。",
             messages=[],
             roles=["user", "assistant", "system"],
-            sep="\n### ",
+            sep="\n###",
             stop_str="###",
         )
 

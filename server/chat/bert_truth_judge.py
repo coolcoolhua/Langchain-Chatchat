@@ -4,7 +4,7 @@ from transformers import AutoModelForSequenceClassification
 from fastapi.responses import JSONResponse
 from fastapi import Body, Request
 
-model_path = '/home/ubuntu/bertTrain/truth_testoutput/checkpoint-600'
+model_path = '/root/autodl-tmp/bertmodels/truth_testoutput/'
 
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 model = AutoModelForSequenceClassification.from_pretrained(model_path,num_labels=2)

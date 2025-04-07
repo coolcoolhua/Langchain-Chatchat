@@ -43,7 +43,7 @@ def es_add_data(
             if len_check < 1:
                 t["created_at"] = datetime.datetime.now().strftime(time_format)
                 t["last_modifier_at"] = datetime.datetime.now().strftime(time_format)
-                print(t)
+                # print(t)
                 res = es.index(index=index_name, body=t)
                 if res["result"] == "created":
                     print("添加成功")
@@ -66,7 +66,7 @@ def es_add_data(
                         else:
                             print("更新失败")
                             wrong_list.append(t["id"])
-            print(res)
+            # print(res)
     
     if len(wrong_list) ==0:
         ret["status"] = "success"

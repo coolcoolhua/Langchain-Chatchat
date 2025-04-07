@@ -1,0 +1,635 @@
+<!DOCTYPE html><html style="font-size: 100px;"><head>
+
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no, initial-scale=1">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="">
+    <title>白颖仁：矢志不渝 红心向党-清华大学</title><meta name="keywords" content="清华大学,清华人物,白颖仁">
+<meta name="description" content="99岁，清华最年长的“年轻”党员艺术教育中心离休职工白颖仁用矢志不渝的执著追求，向党奉献毕生的忠诚。">
+
+    <link href="../../new/style/index.css" rel="stylesheet">
+    <link href="../../new/style/phone.css" rel="stylesheet" media="screen and (max-width: 800px)">
+      <script type="text/javascript" src="../../new/script/jquery.js"></script>
+    <script type="text/javascript" src="../../new/script/bdtxk.js"></script>
+    <script src="../../new/script/set.js"></script>
+      <script type="text/javascript" src="../../new/script/jquery.qrcode.min.js"></script>
+<!--Announced by Visual SiteBuilder 9-->
+<link rel="stylesheet" type="text/css" href="../../_sitegray/_sitegray_d.css">
+<script language="javascript" src="../../_sitegray/_sitegray.js"></script>
+<!-- CustomerNO:77656262657232307e78475c5356574200000003435c -->
+<link rel="stylesheet" type="text/css" href="../../new/cont.vsb.css">
+<script type="text/javascript" src="/system/resource/js/counter.js"></script>
+<script type="text/javascript">_jsq_(1179,'/new/cont.jsp',17382,1714694451)</script>
+</head>
+
+<body class="show">
+    <div class="qrid_zz">
+        <div id="qrid"></div>
+    </div>
+<div class="g-headD"></div>
+<div class="g-head">
+    <div class="wal">
+        <script language="javascript" src="/system/resource/js/dynclicks.js"></script><script language="javascript" src="/system/resource/js/openlink.js"></script>    <a href="../../news.htm" onclick="_addDynClicks(&quot;wburl&quot;, 1714694451, 72141)" class="logo"></a>
+
+        <div class="link">
+                     <a href="../../index.htm" title="" onclick="_addDynClicks(&quot;wburl&quot;, 1714694451, 71354)">清华主页</a><b>·</b>
+         
+         
+         <a class="on" href="https://www.tsinghua.edu.cn/en/News.htm" title="" onclick="_addDynClicks(&quot;wburl&quot;, 1714694451, 71355)">English Version</a>
+
+        </div>
+        <div class="btns">
+<script type="text/javascript">
+    function _nl_ys_check(){
+        
+        var keyword = document.getElementById('showkeycode1017204').value;
+        if(keyword==null||keyword==""){
+            alert("请输入你要检索的内容！");
+            return false;
+        }
+        if(window.toFF==1)
+        {
+            document.getElementById("lucenenewssearchkey1017204").value = Simplized(keyword );
+        }else
+        {
+            document.getElementById("lucenenewssearchkey1017204").value = keyword;            
+        }
+        var  base64 = new Base64();
+        document.getElementById("lucenenewssearchkey1017204").value = base64.encode(document.getElementById("lucenenewssearchkey1017204").value);
+        new VsbFormFunc().disableAutoEnable(document.getElementById("showkeycode1017204"));
+        return true;
+    } 
+</script>
+<form action="../../jsjg/xww_jsjg.jsp?wbtreeid=1179" method="post" id="au2a" name="au2a" onsubmit="return _nl_ys_check()">
+ <input type="hidden" id="lucenenewssearchkey1017204" name="lucenenewssearchkey" value=""><input type="hidden" id="_lucenesearchtype1017204" name="_lucenesearchtype" value="1"><input type="hidden" id="searchScope1017204" name="searchScope" value="0">
+
+<div class="search">
+                <div class="input"><input type="text" name="showkeycode" id="showkeycode1017204"></div>
+                <div class="submit"><input type="submit" value=""></div>
+</div>
+</form><script language="javascript" src="/system/resource/js/base64.js"></script><script language="javascript" src="/system/resource/js/formfunc.js"></script>
+
+            <dl class="share">
+                                      <dd><a onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 60986)" href="http://weibo.com/tsinghua"><img alt="" src="../../new/image/btn44_1.png"></a></dd>
+           
+                <dd><a onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 60987)" href="javascript:;"><img alt="" src="../../new/image/btn44_2.png"></a>
+                    <div class="layer"><i></i><img alt="" src="../../new/image/weixin.jpg"></div>
+                </dd>
+           
+                <dd><a onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 60988)" href="javascript:;"><img alt="" src="../../new/image/db_dy_tb.png"></a>
+                    <div class="layer"><i></i><img alt="" src="../../new/image/dys.jpg"></div>
+                </dd>
+           
+
+            </dl>
+        </div>
+        <a class="navA" href=""></a>
+        <div class="nav">
+            <div class="logo"></div>
+            <div class="list">
+<ul>
+                    <li><a href="../../news/ttxw.htm" class="name">头条新闻</a>
+                    </li>
+                    <li><a href="../../news/zttj.htm" class="name">专题推荐</a>
+                    </li>
+                    <li><a href="../../news/zxdt.htm" class="name">最新动态</a>
+                    </li>
+                    <li><a href="../../news/mtqh.htm" class="name">媒体清华</a>
+                    </li>
+                    <li><a href="../../news/zhsx.htm" class="name">综合时讯</a>
+                    </li>
+                    <li><a href="../../news/rcpy.htm" class="name">人才培养</a>
+                    </li>
+                    <li><a href="../../news/kxyy.htm" class="name">科学研究</a>
+                    </li>
+                    <li><a href="../../news/jlhz.htm" class="name">交流合作</a>
+                    </li>
+                    <li><a href="../../news/qhrw.htm" class="name">清华人物</a>
+                    </li>
+                    <li><a href="../../news/qqxy.htm" class="name">菁菁校园</a>
+                    </li>
+                    <li><a href="../../news/tsqh.htm" class="name">图说清华</a>
+                    </li>
+                    <li><a href="../../news/spqh/jctj.htm" class="name">视频清华</a>
+                    </li>
+                    <li><a href="../../news/qhgj.htm" class="name">清华广角</a>
+                    </li>
+                    <li><a href="../../news/qhsy.htm" class="name">清华史苑</a>
+                    </li>
+                    <li><a href="../../news/qhsk.htm" class="name">清华思客</a>
+                    </li>
+                    <li><a href="../../news/qhxk.htm" class="name">清华报刊</a>
+                    </li>
+                    <li><a href="../../news/xwhj.htm" class="name">新闻合集</a>
+                    </li>
+</ul>
+
+            </div>
+            <div class="btn-list">
+                <script type="text/javascript">
+    function _nl_ys_check_mobile(){
+        
+        var keyword = document.getElementById('showkeycode1025415mobile').value;
+        if(keyword==null||keyword==""){
+            alert("请输入你要检索的内容！");
+            return false;
+        }
+        if(window.toFF==1)
+        {
+            document.getElementById("lucenenewssearchkey1025415").value = Simplized(keyword );
+        }else
+        {
+            document.getElementById("lucenenewssearchkey1025415").value = keyword;            
+        }
+        var  base64 = new Base64();
+        document.getElementById("lucenenewssearchkey1025415").value = base64.encode(document.getElementById("lucenenewssearchkey1025415").value);
+        new VsbFormFunc().disableAutoEnable(document.getElementById("showkeycode1025415"));
+        return true;
+    } 
+</script>
+<form action="../../jsjg/xww_jsjg.jsp?wbtreeid=1179" method="post" id="au5amobile" name="au5a" onsubmit="return _nl_ys_check()_mobile()" style="display: inline">
+ <input type="hidden" id="lucenenewssearchkey1025415" name="lucenenewssearchkey" value=""><input type="hidden" id="_lucenesearchtype1025415" name="_lucenesearchtype" value="1"><input type="hidden" id="searchScope1025415" name="searchScope" value="0">
+
+<div class="search">
+                <div class="input"><input type="text" name="showkeycode" id="showkeycode1025415mobile"></div>
+                <div class="submit"><input type="submit" value=""></div>
+</div>
+</form>
+
+                <dl class="share">
+                 <dd>
+               <a onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 61014)" href="http://weibo.com/tsinghua"><img src="../../new/image/btn44_1_white.png" alt=""></a>
+            </dd>
+            <dd class="dd_wx">
+               <a onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 61015)" href="javascript:;"><img src="../../new/image/btn44_2_white.png" alt=""></a>
+               <div class="layer"><i></i><img alt="" src="../../new/image/weixin.jpg"></div>
+            </dd>
+             <dd class="dd_dy">
+               <a onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 61016)" href="javascript:;"><img src="../../new/image/db_dy_tbs.png" alt=""></a>
+               <div class="layer"><i></i><img alt="" src="../../new/image/dys.jpg"></div>
+            </dd>
+<script>
+   var mobileHover = function () {
+ $('*').on('touchstart', function () {
+ $(this).trigger('hover');
+ }).on('touchend', function () {
+ $(this).trigger('hover');
+ });
+}; 
+</script> 
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="dqwz nry">
+    <div class="rem12 nry_bt">
+            <p class="wz">        
+                <a href="../../index.htm">清华主页</a>
+
+                -
+                <a href="../../news.htm">清华新闻</a>
+
+                -
+                <a href="../../news/qhrw.htm">清华人物</a>
+
+                -
+                正文
+</p>
+    </div>
+</div>
+
+<div class="nry_big">
+    <div class="rem12">
+            <div class="left nry_con_out">
+
+
+
+
+
+<script language="javascript" src="../../_dwr/interface/NewsvoteDWR.js"></script><script language="javascript" src="../../_dwr/engine.js"></script><script language="javascript" src="/system/resource/js/news/newscontent.js"></script><link href="/system/resource/js/photoswipe/3.0.5.1/photoswipe.css" type="text/css" rel="stylesheet"><script language="javascript" src="/system/resource/js/photoswipe/3.0.5.1/klass.min.js"></script><script language="javascript" src="/system/resource/js/ajax.js"></script><form name="_newscontent_fromname">
+    <style>#vsb_content h3{font-size: .36rem;
+    line-height: .5rem;
+    margin-bottom: .14rem;
+    font-weight: bold;text-align: left;}</style>
+    
+         <style>
+        
+        .v_news_content h1{ 
+   position: relative;
+    z-index: 100;
+    font-size: .36rem;
+    line-height: .5rem;
+    margin-bottom: .14rem;
+    font-weight: bold;
+    padding: 0.1rem;}
+    @media screen and (max-width: 817px){
+    .v_news_content h1{line-height: .4rem;}
+    }
+  
+        </style>
+<div class="subchannel">
+            <ul class="ushare">
+                <li><b><i class="thunews-eye"></i></b><span id="item_total" style="z-index:1;"><span><script>_showDynClicks("wbnews", 1714694451, 17382)</script><span id="dynclicks_wbnews_17382_854" name="dynclicks_wbnews_17382_854">6430</span></span> </span></li>
+                <li class="share bdsharebuttonbox bdshare-button-style0-16" data-bd-bind="1616830758605"><b><i class="thunews-share-alt"></i></b><a href="#" data-cmd="more" onclick="return false">分享</a></li>                         
+            </ul>
+            <div class="my-share-d">
+                            <div onclick="shareTo('sina')" class="d1">
+                                <img src="../../new/image/btn44_1.png" alt="">
+                            </div>
+                            <div onclick="shareTo('wechat')" class="d1">
+                                <img src="../../new/image/btn44_2.png" alt="">
+                            </div>
+                            <div onclick="shareTo('qq')" class="d1">
+                                <img src="../../new/image/qq_xtb.png" alt="">
+                            </div>
+                            <div onclick="shareTo('qzone')" class="d1">
+                                <img src="../../new/image/qq_kj_xtb.png" alt="">
+                            </div>
+
+
+                        </div>
+        </div> 
+   
+<script>
+   console.log(document.location.href);//本页面地址，如localhost/html/index.html
+        function shareTo(stype) {
+            var ftit = '';
+            var flink = '';
+            var lk = '';
+            //获取文章标题
+            ftit = $('.nry_bt .bt').text();//此处的class名应该根据自己本身页面的class来取
+            //获取网页中内容的第一张图片
+            flink = 'https://'+window.location.host+$('.content img').eq(0).attr('src');
+            if (typeof flink == 'undefined') {
+                flink = '';
+            }
+            //当内容中没有图片时，设置分享图片为网站logo
+            if (flink == '') {
+                /**
+                 * 此处根据自己页面的样式以及布局进行改变处理
+                 *
+                 */
+                lk = 'https://' + window.location.host + '../../new/image/logo308.png';
+            }
+            //如果是上传的图片则进行绝对路径拼接
+            if (flink.indexOf('/uploads/') != -1) {
+                lk = 'http://' + window.location.host + flink;
+            }
+            //百度编辑器自带图片获取
+            if (flink.indexOf('ueditor') != -1) {
+                lk = flink;
+            }
+            /**
+             * 进行QQ分享测试时，本地的页面会分享报错，需要用部署地址，可用'http://www.baidu.com'来代替document.location.href，进行测试查看效果
+             */
+            //qq空间接口的传参
+            if (stype == 'qzone') {
+                window.open('https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=' + document.location.href + '?sharesource=qzone&title=' + ftit + '&pics=' + lk + '&summary=' + document.querySelector('meta[name="description"]').getAttribute('content'));
+            }
+            //新浪微博接口的传参
+            if (stype == 'sina') {
+                window.open('http://service.weibo.com/share/share.php?url=' + document.location.href + '?sharesource=weibo&title=' + ftit + '&pic=' + lk + '&appkey=2706825840');
+            }
+            //qq好友接口的传参
+            if (stype == 'qq') {
+                //获取meta标签的值，然后分享
+                window.open('http://connect.qq.com/widget/shareqq/index.html?url=' + document.location.href + '?sharesource=qzone&title=' + ftit + '&pics=' + lk + '&summary=' + document.querySelector('meta[name="description"]').getAttribute('content') + '&desc=工业智展，让实物数字化，虚拟化、移动化、立体化交互');
+            }
+            //生成二维码给微信扫描分享
+            if (stype == 'wechat') {
+
+                var qrstr=document.location.href;
+                if($('#qrid')[0].innerHTML==""){
+                    $('#qrid').qrcode(qrstr);
+                }
+                $('.qrid_zz')[0].style.display="flex";
+
+            }
+        }
+$(function () {
+        var result = window.matchMedia('(max-width: 817px)');
+
+        if (result.matches) {
+            var fx_kg=0
+            $('.nry_con_out .ushare li.share').click(function(){
+                if(fx_kg==0){
+                    $('.nry_big .subchannel')[0].style.bottom='70px';
+                    fx_kg=1;
+                }else{
+                    $('.nry_big .subchannel')[0].style.bottom='0px';
+                    fx_kg=0;
+                }
+                
+            })
+        } else {
+            $('.nry_con_out .ushare li.share').mouseenter(function(){
+            $('.my-share-d')[0].style.display="block";
+            })
+            $('.my-share-d').mouseleave(function(){
+                $('.my-share-d')[0].style.display="none";
+            })
+        }
+        
+        
+    })   
+
+    $('.qrid_zz').click(function(){
+        $('.qrid_zz')[0].style.display="none";
+    })
+    </script>
+        
+
+            <div id="vsb_content" class="content" ;="" style="margin-top: -10%;"><div class="v_news_content">
+<p style="text-align: center"><strong><span style="font-size: 18px">矢志不渝&nbsp; 红心向党</span></strong></p>
+<p style="text-align: center"><span style="font-size: 18px">——深切缅怀清华最年长的“年轻”党员白颖仁老人</span></p>
+<p>　&nbsp;&nbsp; &nbsp;2013年2月18日，在清华大学校医院殡仪馆，清华师生送走了享年99岁，清华大学最年长的“年轻”党员，97岁高龄加入中国共产党的艺术教育中心离休职工白颖仁。校党委书记胡和平、党委副书记邓卫送了花圈并亲自到现场为白颖仁老人送行。学校党委组织部、党委宣传部、机关党委、艺术教育中心、党委离退休工作处、人文学院等单位送了花圈。</p>
+<p style="text-align: center"><img alt="" width="340" height="458" src="/_mediafile/qh2021b/publish/news/4205/20130221114137067591669/1111.jpg" style="width: 317px; height: 425px"></p>
+<p style="text-align: center"><span style="font-family: 楷体,楷体_GB2312">图为胡和平等与白颖仁家属交流。供图：艺教中心</span></p>
+<p>　　送走老人后，家属代表来到艺术教育中心，为老人缴纳最后一笔党费——老人最后一个月的工资4300元。家属说，老人走得匆忙，并没有留下遗嘱，但老人生前一直说，自己入党时间太短，为党做的贡献太少，家属领会老人的意愿，商量后决定为老人缴纳最后一笔党费。这最后一笔党费，凝聚着白颖仁老人对党的执著追求与无限忠诚。</p>
+<p style="text-align: center"><img alt="" width="425" height="283" src="/_mediafile/qh2021b/publish/news/4205/20130221114137067591669/heying.jpg"></p>
+<p style="text-align: center"><span style="font-family: 楷体,楷体_GB2312">图为白颖仁家属为老人缴纳最后一笔党费。记者 <strong>智 斐</strong> 摄</span></p>
+<p>　　白颖仁1914年1月28日年生于北京通县，生前是清华大学艺术教育中心的职员。她1946年进入清华大学工作，1950年到音乐室工作，1980年离休。2007年12月，怀着对党的真挚感情与执著追求，老人递交了入党申请书。 经过两年多的考察，2010年9月，老人以97岁高龄光荣地加入了中国共产党，成为清华大学最年长的新党员，实现了自己成为一名中国共产党党员的夙愿。清华大学党委常务副书记陈旭，还有党委组织部、离退休工作部、人文学院等单位领导参加了艺术教育中心党支部白颖仁的发展会。</p>
+<p>　　从申请入党到入党后的短短几年时间里，白颖仁最常说的话，就是自己年事已高，为党做的贡献太少，她希望在自己有生的，以分秒计算的生命历程中能尽己所能，多做贡献。她热爱书法，1992年在美国休斯敦举办个人书法展，2006年在清华大学举办个人书法展，赢得业内人士一致好评，并多次获得市区书法奖项。白老师不仅在书法艺术上追求完美，而且在教授书法方面，悉心细致，毫无保留地将技艺传授给学生们。她生前曾在清华大学教职工夜校和海淀走读大学（现北京城市学院）、清华园老龄大学、校机关、化工系机关等单位教授书法，奉献自己的一份光和热。入党转正会上，她将自己书写的书法作品“永远忠于党”裱成镜框赠送给艺术教育中心党支部。</p>
+<p style="text-align: center"><img alt="" width="340" height="458" src="/_mediafile/qh2021b/publish/news/4205/20130221114137067591669/12.jpg" style="width: 287px; height: 390px"></p>
+<p style="text-align: center"><span style="font-family: 楷体,楷体_GB2312">图为白颖仁老人为庆祝十八大胜利召开献上亲手书写的书法作品。记者<strong> 智 斐</strong> 摄</span></p>
+<p>　　白颖仁老人离休后时刻关注国家发展，关心时政，坚持阅读，每天必看《参考消息》，每天上网浏览信息，经常与人讨论国内外大事。在每次汇报中，都积极畅谈自己对时事的认识。在党的十八大胜利召开之前，关注党的十八大的各种信息。最让老人期待的是，党的十八大高度关注民生问题，她说，国家繁荣了，但存在贫富差距，尤其有些偏远地区和我们的生活差距很大，应该遵循科学发展观，尽量地缩小差距。她还用书法来表达内心的喜悦，倾诉对党的祝贺和无限热爱，虽然身体欠佳，但还是在病中挥毫书写了“敬贺党的十八大胜利召开”，并再三叮嘱离退休老干部处的同志一定要在党的十八大召开之前送到学校党委。她说，党的十八大是继往开来的大事，党的十八大报告是里程碑式的文件、划时代的文件，自己作为一名新党员，更应该深入学习，把精神吃透，并贯彻到生活中去，贯彻到行动中去。她表示，2012年自己住了6次医院，体力比较差，但希望自己的身体能健康起来，再为党多做些事情。</p>
+<p>　　白颖仁乐于助人，退而不休，虽然自己年近百岁，经常以电话、短信等多种方式，向自己身边的朋友们宣传党的方针政策，鼓励他们积极乐观地生活，向他们传授养生健身之道。艺术教育中心王莉同志身患急性白血病，她多次发短信鼓励她乐观面对，战胜病魔。她以一个世纪老人的身体力行，证明自己对党的忠诚，履行着一个党员的模范带头作用，也为后人做出了表率。</p>
+<p>　　白颖仁老人一直感激清华大学的培养：“我到清华五十多年，受清华精神熏陶，一直秉承‘自强不息、厚德载物’的校训。入党两年来，虽然我不断生病，不能出门，但我牢记自己是一名党员，我要做自己能够做到的事。我做工作，不仅代表个人，而且是作为一名党员代表组织在做工作。”</p>
+<p style="text-align: right">（清华新闻网2月22日电）</p>
+<p style="text-align: right">　　&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 供稿： 艺术教育中心&nbsp;&nbsp;&nbsp; 编辑：范丽　　</p>
+<p>&nbsp;</p>
+</div>
+            <div class="sj">
+         <p>2013年02月22日 14:14:47</p>
+         </div>
+    
+    
+    
+    </div>
+    
+                <div id="div_vote_id"></div>
+               
+    
+    <style>
+    
+    
+    .nry_con_out video {
+    display: block;
+     width: 100% !important; 
+    height: auto;}
+    </style>
+</form>
+
+
+               <div class="xgxw">
+                    <p>相关新闻</p>
+                </div>
+                <div class="xgwwz">
+
+
+<span id="relateNewsjs1018402js"><ul class="qhrw2_ul"><li class="clearfix"><a href="85407.htm" target="_blank" title="归来依旧红心向党"><div class="sj"><span>2021.06.30</span></div><div class="tit"><p class="bt">归来依旧红心向党</p></div><p></p></a></li><li class="clearfix"><a href="../../news.htm"><span class=" columnstyle1018402 ">[清华新闻]</span></a><a href="../1831/73627.htm" target="_blank" title="王向斌：追随党的脚步 20年矢志不渝"><div class="sj"><span>2011.04.01</span></div><div class="tit"><p class="bt">王向斌：追随党的脚步 20年矢志不渝</p></div><p></p></a></li><li class="clearfix"><a href="../../news.htm"><span class=" columnstyle1018402 ">[清华新闻]</span></a><a href="../1809/73134.htm" target="_blank" title="99岁党员白颖仁挥毫祝贺十八大"><div class="sj"><span>2012.11.08</span></div><div class="tit"><p class="bt">99岁党员白颖仁挥毫祝贺十八大</p></div><p></p></a></li><li class="clearfix"><a href="../1181/86301.htm" target="_blank" title="百年征程谱华章 红心向党诉衷情"><div class="sj"><span>2021.08.21</span></div><div class="tit"><p class="bt">百年征程谱华章 红心向党诉衷情</p></div><p></p></a></li><li class="clearfix"><a href="../../news.htm"><span class=" columnstyle1018402 ">[清华新闻]</span></a><a href="../1831/73656.htm" target="_blank" title="清华大学97岁离休教师白颖仁：追随时代多做些事"><div class="sj"><span>2011.07.01</span></div><div class="tit"><p class="bt">清华大学97岁离休教师白颖仁：追随时代多做些事</p></div><p></p></a></li></ul></span>
+
+<script language="JavaScript">
+    getRelateNewsjs1018402js(0);
+    function getRelateNewsjs1018402js(temp)
+    {
+        var pars = 'archive=0&clickstyle=clickstyle1018402&viewid=1018402&leaderchar=%C2%B7&titlelen=0&days=3&endimage=&clickshow=false&clickname=%E7%82%B9%E5%87%BB%EF%BC%9A+&&linkmode=_blank&mode=10&pageUrl=/system/_owners/qh2021b/_webprj/new/cont.jsp&columnshow=2&wbnewsid=17382&owner=1714694451&limitdays=182&rowcount=5&columnstyle= columnstyle1018402 &columnid=-1&uid=u9&wbtids=2108,2061,2057,2059,2060,2062,2063,1660,1177,1175,2123,2127,2125,2126,2124,1662,1180,1661,1179,1181,1182,1173,1183,1176,1178,2070,1174,1902,1923,1916,1917,1788,1878,1769,1832,2001,1773,1681,1859,1941,1986,1795,1992,1756,1922,1791,1826,1880,1870,1905,1805,1684,1806,1929,1896,1983,1673,1835,1667,1850,1871,1897,1930,2024,1970,1910,1965,1988,2012,1815,1879,1991,1798,1728,1874,1771,1913,1938,1866,1705,1774,1864,1954,1768,1989,2004,1776,2028,1947,1977,1712,1829,1793,1863,1969,1780,1810,1953,1958,1672,1867,1978,1999,2016,2009,1877,2018,1848,1945,1837,1813,1921,1904,1875,1784,1789,2033,1822,1928,1853,1779,1894,1840,2032,2034,2031,1939,2035,1701,1743,1691,1710,1823,1730,1762,1735,1937,1811,1865,1754,1915,1957,1816,1719,1804,1734,1770,1790,1898,1731,1750,1764,1786,1693,1726,2026,1775,1732,1718,1808,1763,1692,1846,1868,1891,1942,1985,2002,2019,2030,1752,1707,1778,1803,1820,1737,1680,1963,1950,1895,1948,1887,1800,1855,1919,1888,1889,1819,1761,1818,1782,1869,1827,1839,1968,2014,1856,1841,1851,1801,1862,1844,2020,1748,1920,1723,1860,1975,1678,1709,1669,1949,1892,1830,1959,1765,2021,1740,2006,1935,1704,2023,1984,1881,1720,1736,1767,2010,1924,1683,1960,1998,1696,1697,1699,1714,1908,2022,1931,2013,1909,1689,1668,1834,1976,1967,2007,1831,1932,1890,1690,1687,1715,1686,1893,2000,1751,1972,1792,1809,1665,1940,1906,1755,1982,1883,1946,1733,1783,1725,1742,1836,2017,1824,1914,1685,1694,1971,1802,1980,2003,1821,1872,1876,1781,1933,1943,1674,2008,2015,1838,1724,1993,1797,1760,2005,1955,2036,1973,1990,1849,1741,1886,1907,1966,1817,1900,1747,1925,1974,1746,2029,1996,2025,1845,1666,1882,2027,1997,1706,1703,1739,1952,1951,1670,1807,1716,1987,1833,1721,1677,1903,1787,1758,1777,1944,1671,1682,1676,1679,1688,1675,1708,1700,1695,1711,1729,1727,1722,1717,1713,1749,1744,1745,1757,1759,1753,1772,1766,1785,1799,1794,1796,1814,1812,1828,1825,1842,1843,1858,1852,1854,1861,1857,1847,1884,1873,1885,1901,1899,1911,1926,1912,1936,1927,1956,1934,1961,1962,1964,1979,1981,1994,1995,2011,1918';
+        var url = '/system/resource/code/relatenewsc.jsp?'+pars;
+
+        //需要POST的值，把每个变量都通过&来联接
+        var postStr   = "winstyle=winstyle&leaderfont=leaderfont1018402&leaderimage=&linkmode=target=_blank&titlestylename=titlestyle1018402&timestylename=timestyle1018402";
+        //实例化Ajax
+        var ajax = false;
+        //开始初始化XMLHttpRequest对象
+        if(window.XMLHttpRequest)
+        {   //Mozilla 浏览器
+            ajax = new XMLHttpRequest();
+            if (ajax.overrideMimeType)
+            {   //设置MiME类别
+                ajax.overrideMimeType("text/xml");
+            }
+        }
+        else if (window.ActiveXObject)
+        {   // IE浏览器
+            try
+            {
+                ajax = new ActiveXObject("MSXML2.XMLHTTP.6.0");
+            }
+            catch (e)
+            {
+                try
+                {
+                    ajax = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+                }
+                catch (e) {}
+            }
+        }
+        if (!ajax)
+        {   // 异常，创建对象实例失败
+            window.alert("不能创建XMLHttpRequest对象实例.");
+            return false;
+        }
+        //通过Post方式打开连接
+        ajax.open("POST", url, true);
+        //定义传输的文件HTTP头信息
+        ajax.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+        //发送POST数据
+        ajax.send(postStr);
+        //获取执行状态
+
+        ajax.onreadystatechange = function()
+        {
+            if(ajax.status=='12031')
+            {
+                temp++;
+                if(temp<2)
+                {
+                    getRelateNews_ajax(temp);
+                }
+            }
+            //如果执行状态成功，那么就把返回信息写到指定的层里
+            if (ajax.readyState == 4 && ajax.status == 200)
+            {
+                document.getElementById("relateNewsjs1018402js").innerHTML = ajax.responseText;
+            }
+        }
+    }
+</script>
+</div>
+            </div>
+            <div class="right">
+                <div class="zxgx">
+                    
+                    <div class="zxgx_tit">
+    <p class="tp"></p>
+    <p class="tit">最新动态</p>
+    <div class="clear"></div>
+</div><ul class="asidetimeline" id="newlist">
+
+<title>最近更新页面-清华大学</title><meta name="keywords" content="清华大学,最近更新页面">
+
+<!--Announced by Visual SiteBuilder 9-->
+<link rel="stylesheet" type="text/css" href="../_sitegray/_sitegray.css">
+<script language="javascript" src="../_sitegray/_sitegray.js"></script>
+<!-- CustomerNO:77656262657232307e78475c5356574200000003435c -->
+<link rel="stylesheet" type="text/css" href="../new/zjgxymzs.vsb.css">
+<script type="text/javascript" src="/system/resource/js/counter.js"></script>
+<script type="text/javascript">_jsq_(2051,'/new/zjgxymzs.jsp',-1,1714694451)</script>
+
+
+<div>
+
+
+
+<script language="javascript" src="/system/resource/js/dynclicks.js"></script><script language="javascript" src="/system/resource/js/centerCutImg.js"></script><script language="javascript" src="/system/resource/js/ajax.js"></script><li>
+    <a href="http://www.tsinghua.edu.cn/info/1178/110058.htm">
+	<p class="sj">03.12</p>
+	<p class="bt">副校长彭刚会见澳门城市大学校长刘骏一行</p>
+    </a>
+</li>
+<li>
+    <a href="http://www.tsinghua.edu.cn/info/1180/110038.htm">
+	<p class="sj">03.12</p>
+	<p class="bt">“思源骨干计划”第十七期师生赴新加坡、马来西亚开展实践调研</p>
+    </a>
+</li>
+<li>
+    <a href="http://www.tsinghua.edu.cn/info/1660/110056.htm">
+	<p class="sj">03.12</p>
+	<p class="bt">青春启航扬风帆，砥砺奋进铸辉煌——140余支队伍1500余名学子参与2024年研究生寒假社会实践</p>
+    </a>
+</li>
+<li>
+    <a href="http://www.tsinghua.edu.cn/info/1175/110040.htm">
+	<p class="sj">03.11</p>
+	<p class="bt">化工系张强课题组合作在非共价能源电化学工程领域取得新进展</p>
+    </a>
+</li>
+<li>
+    <a href="http://www.tsinghua.edu.cn/info/1178/110037.htm">
+	<p class="sj">03.11</p>
+	<p class="bt">内蒙古自治区人大常委会副主任李秉荣一行访问清华大学</p>
+    </a>
+</li>
+<li>
+    <a href="http://www.tsinghua.edu.cn/info/1180/109994.htm">
+	<p class="sj">03.11</p>
+	<p class="bt">清华大学上海校友会半导体专委会暨电机工程专委会年会举行</p>
+    </a>
+</li>
+<li>
+    <a href="http://www.tsinghua.edu.cn/info/1177/110032.htm">
+	<p class="sj">03.11</p>
+	<p class="bt">中国科协党组书记贺军科一行调研清华大学</p>
+    </a>
+</li>
+<li>
+    <a href="http://www.tsinghua.edu.cn/info/3056/110030.htm">
+	<p class="sj">03.11</p>
+	<p class="bt">【两会之声】李景虹：加快推动废塑料化学循环，有效应对塑料污染治理</p>
+    </a>
+</li>
+<li>
+    <a href="http://www.tsinghua.edu.cn/info/3056/110026.htm">
+	<p class="sj">03.11</p>
+	<p class="bt">【两会之声】蔡继明：增强优势地区高质量发展的土地保障能力</p>
+    </a>
+</li>
+<li>
+    <a href="http://www.tsinghua.edu.cn/info/3056/109947.htm">
+	<p class="sj">03.11</p>
+	<p class="bt">【两会之声】周光权：建立轻罪“犯罪记录封存”制度</p>
+    </a>
+</li>
+
+
+<script>_showDynClickBatch(['dynclicks_u0_110057','dynclicks_u0_110041','dynclicks_u0_110055','dynclicks_u0_110039','dynclicks_u0_110036','dynclicks_u0_109993','dynclicks_u0_110031','dynclicks_u0_110029','dynclicks_u0_110025','dynclicks_u0_109948'],[110057,110041,110055,110039,110036,109993,110031,110029,110025,109948],"wbnews", 1714694451)</script>
+</div>
+
+
+
+
+
+
+</ul>
+<script>
+    $.ajax({
+        type:"GET",
+        url:"../../news/zjgxym.htm",
+        success:function(data){
+           $("#newlist").html(data.replace(RegExp("([\./]*)info/", "g"), "/info/"));
+            var today = new Date();
+            var intMonths = (today.getMonth()<9?"0":"")+(today.getMonth()+1)+"."+(today.getDate()<10?"0":"")+today.getDate();
+            $('#newlist li div').each(function(){
+                var str = $(this).html();
+                if(str.indexOf(intMonths)>-1){
+                    $(this).addClass("today");
+                    $(this).html(str.replace(intMonths,"今天"));
+                }
+            });
+        }
+    });
+</script>
+                </div>
+            </div>
+            <div class="clear"></div>
+    </div>
+            
+</div>
+
+<div class="g-foot ej_nry_foot">
+    <div class="wal">
+        
+        <div class="logo">    
+<img alt="" src="../../new/image/logo218.png" onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 61013)">
+
+</div>
+            <div class="img-list">
+            <div class="list-wrapper">
+                <ul>
+<li style="opacity: 1; top: 0rem; left: 0rem; width: 1.3rem; z-index: 3;"><a href="../../news/qhxk/smqh.htm" onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 61010)"><img alt="" src="../../ditu/4051253.png"></a></li>         
+
+<li style="opacity: 1; top: 0.125rem; left: 1.2rem; width: 1.1rem; z-index: 2;"><a href="../../news/qhxk/qhxytx.htm" onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 61012)"><img alt="" src="../../newspdf/571ef8812e021c2433ecdbf01e3e9f7.jpg"></a></li>         
+
+<li style="opacity: 1; top: 0.3rem; left: 2rem; width: 0.8rem; z-index: 1;"><a href="http://qhbk.tsinghua.edu.cn/xqh/" onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 61009)"><img alt="" src="../../new/script/xqh2209.jpg"></a></li>         
+
+<li style="opacity: 1; z-index: 0; top: 0.125rem; left: -1rem; width: 1.1rem;"><a href="../../new/image/2022qinghuagailan20220425.pdf" onclick="_addDynClicks(&quot;wbimage&quot;, 1714694451, 61011)"><img alt="" src="../../new/img4.jpg"></a></li>         
+ </ul>
+            </div>
+        </div>
+       <div class="container"><div class="link">
+
+           <a href="../../news/gywm.htm" onclick="_addDynClicks(&quot;wburl&quot;, 1714694451, 71399)">关于我们</a>
+           <em>│</em>
+       <a href="../../news/yqlj.htm" onclick="_addDynClicks(&quot;wburl&quot;, 1714694451, 71400)">友情链接</a>
+           <em>│</em>
+       <a href="../../zjqh/xyfg/xydt.htm" onclick="_addDynClicks(&quot;wburl&quot;, 1714694451, 71401)">清华地图</a>
+           
+
+
+
+
+
+<form name="_newscontent_fromname" style="display: inline;">
+  <em>│</em><a onclick="this.href='https://news-quest.tsinghua.edu.cn/yjfk/index.htm?bsm=1714694451&amp;mc='+escape('清华大学-清华人物')+'&amp;url='+escape(window.location.href)" href="" target="_blank">意见反馈</a>    
+</form>
+
+</div>
+            <div class="content"><script language="javascript" src="/system/resource/js/news/mp4video.js"></script>
+清华大学新闻中心版权所有，清华大学新闻网编辑部维护，电子信箱: news@tsinghua.edu.cn 
+<br> Copyright 2001-2020 news.tsinghua.edu.cn. All rights reserved.</div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="../../new/script/js.js"></script>
+<link href="../../new/script/swiper/swiper.min.css" rel="stylesheet">
+<script type="text/javascript" src="../../new/script/swiper/swiper.jquery.min.js"></script>
+<script type="text/javascript" src="../../new/script/TweenMax.min.js"></script>
+
+</body></html>

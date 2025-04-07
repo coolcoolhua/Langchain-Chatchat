@@ -298,6 +298,41 @@ class ApiRequest:
 
         response = self.post("/chat/chat", json=data, stream=True, **kwargs)
         return self._httpx_stream2generator(response, as_json=True)
+    
+    
+    def chat_career(
+            self,
+            query: str,
+            conversation_id: str = None,
+            history_len: int = -1,
+            history: List[Dict] = [],
+            stream: bool = True,
+            model: str = LLM_MODELS[0],
+            temperature: float = TEMPERATURE,
+            max_tokens: int = None,
+            prompt_name: str = "default",
+            **kwargs,
+    ):
+        '''
+        对应api.py/chat/chat接口
+        '''
+        data = {
+            "query": query,
+            "conversation_id": conversation_id,
+            "history_len": history_len,
+            "history": history,
+            "stream": stream,
+            "model_name": model,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "prompt_name": prompt_name,
+        }
+
+        # print(f"received input message:")
+        # pprint(data)
+
+        response = self.post("/chat/chat_career", json=data, stream=True, **kwargs)
+        return self._httpx_stream2generator(response, as_json=True)
 
     @deprecated(
         since="0.3.0",
